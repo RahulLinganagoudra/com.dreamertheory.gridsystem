@@ -9,6 +9,7 @@ namespace DT.GridSystem
 		private protected TGridObject[,] gridArray;
 		public UnityEvent OnGridUpdated = new();
 		public Vector2Int GridSize() => gridSize;
+		[SerializeField] private protected bool drawGizmos = true;
 		private protected virtual void Awake()
 		{
 			gridArray = new TGridObject[gridSize.x, gridSize.y];
@@ -90,8 +91,9 @@ namespace DT.GridSystem
 		public abstract Vector3 GetWorldPosition(int x, int y, bool snapToGrid = false);
 		public abstract void GetGridPosition(Vector3 worldPosition, out int x, out int y);
 
-		public virtual void OnDrawGizmosSelected()
+		public virtual void OnDrawGizmos()
 		{
+			if(!drawGizmos)return;
 			gridArray ??= new TGridObject[gridSize.x, gridSize.y];
 			if (gridArray.GetLength(0) != gridSize.x || gridArray.GetLength(1) != gridSize.y)
 			{
@@ -148,8 +150,9 @@ namespace DT.GridSystem
 			y = Mathf.Clamp(y, 0, gridSize.y - 1);
 		}
 
-		public override void OnDrawGizmosSelected()
+		public override void OnDrawGizmos()
 		{
+			if(!drawGizmos)return;
 			base.OnDrawGizmosSelected();
 			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, 0, gridSize.y) * cellSize);
 
@@ -196,8 +199,10 @@ namespace DT.GridSystem
 			y = Mathf.Clamp(y, 0, gridSize.y - 1);
 		}
 
-		public override void OnDrawGizmosSelected()
+		public override void OnDrawGizmos()
 		{
+			if(!drawGizmos)return;
+
 			base.OnDrawGizmosSelected();
 			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, gridSize.y, 0) * cellSize);
 
