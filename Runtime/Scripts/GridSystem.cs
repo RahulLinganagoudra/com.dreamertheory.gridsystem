@@ -153,7 +153,7 @@ namespace DT.GridSystem
 		public override void OnDrawGizmos()
 		{
 			if(!drawGizmos)return;
-			base.OnDrawGizmosSelected();
+			base.OnDrawGizmos();
 			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, 0, gridSize.y) * cellSize);
 
 			for (int x = 0; x < gridSize.x; x++)
@@ -203,7 +203,7 @@ namespace DT.GridSystem
 		{
 			if(!drawGizmos)return;
 
-			base.OnDrawGizmosSelected();
+			base.OnDrawGizmos();
 			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, gridSize.y, 0) * cellSize);
 
 			for (int x = 0; x < gridSize.x; x++)
