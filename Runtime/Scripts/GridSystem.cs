@@ -1,5 +1,3 @@
-using Unity.VisualScripting;
-using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
 using UnityEngine.Events;
 namespace DT.GridSystem
@@ -10,6 +8,7 @@ namespace DT.GridSystem
 		[SerializeField] private protected float cellSize;
 		private protected TGridObject[,] gridArray;
 		public UnityEvent OnGridUpdated = new();
+		public Vector2Int GridSize() => gridSize;
 		private protected virtual void Awake()
 		{
 			gridArray = new TGridObject[gridSize.x, gridSize.y];
