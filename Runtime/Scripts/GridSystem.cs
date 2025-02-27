@@ -4,16 +4,16 @@ namespace DT.GridSystem
 {
 	public abstract class GridSystem<TGridObject> : MonoBehaviour
 	{
-		[SerializeField] private protected Vector2Int gridSize;
+		[SerializeField] protected Vector2Int gridSize;
         [SerializeField] private float cellSize;
-        private protected TGridObject[,] gridArray;
+        protected TGridObject[,] gridArray;
 		public UnityEvent OnGridUpdated = new();
 		public Vector2Int GridSize => gridSize;
 
-       public float CellSize { get => cellSize; private protected set => cellSize = value; }
+       public float CellSize { get => cellSize; protected set => cellSize = value; }
 
-        [SerializeField] private protected bool drawGizmos = true;
-		private protected virtual void Awake()
+        [SerializeField] protected bool drawGizmos = true;
+		protected virtual void Awake()
 		{
 			gridArray = new TGridObject[gridSize.x, gridSize.y];
 
