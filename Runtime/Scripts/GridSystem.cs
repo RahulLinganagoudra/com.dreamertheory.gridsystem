@@ -5,11 +5,14 @@ namespace DT.GridSystem
 	public abstract class GridSystem<TGridObject> : MonoBehaviour
 	{
 		[SerializeField] private protected Vector2Int gridSize;
-		[SerializeField] private protected float cellSize;
-		private protected TGridObject[,] gridArray;
+        [SerializeField] private float cellSize;
+        private protected TGridObject[,] gridArray;
 		public UnityEvent OnGridUpdated = new();
-		public Vector2Int GridSize() => gridSize;
-		[SerializeField] private protected bool drawGizmos = true;
+		public Vector2Int GridSize => gridSize;
+
+       public float CellSize { get => cellSize; private protected set => cellSize = value; }
+
+        [SerializeField] private protected bool drawGizmos = true;
 		private protected virtual void Awake()
 		{
 			gridArray = new TGridObject[gridSize.x, gridSize.y];
@@ -26,7 +29,7 @@ namespace DT.GridSystem
 		public void SetUpGrid(Vector2Int size, float cellsize)
 		{
 			gridSize = size;
-			cellSize = cellsize;
+			CellSize = cellsize;
 			gridArray = new TGridObject[gridSize.x, gridSize.y];
 		}
 		public virtual TGridObject CreateGridObject(GridSystem<TGridObject> gridSystem, int x, int y)
@@ -120,11 +123,11 @@ namespace DT.GridSystem
 		{
 			if (snapToGrid)
 			{
-				return (new Vector3(x - gridSize.x / 2f, 0, y - gridSize.y / 2f) * cellSize + transform.position) + new Vector3(cellSize, 0, cellSize) * 0.5f;
+				return (new Vector3(x - gridSize.x / 2f, 0, y - gridSize.y / 2f) * CellSize + transform.position) + new Vector3(CellSize, 0, CellSize) * 0.5f;
 			}
 			else
 			{
-				return new Vector3(x - gridSize.x / 2f, 0, y - gridSize.y / 2f) * cellSize + transform.position;
+				return new Vector3(x - gridSize.x / 2f, 0, y - gridSize.y / 2f) * CellSize + transform.position;
 			}
 		}
 
@@ -138,8 +141,8 @@ namespace DT.GridSystem
 			//y = Mathf.FloorToInt((worldPosition.z - transform.position.z) / cellSize + gridSize.y / 2f);
 
 			// Snap world position to grid
-			float snappedX = Mathf.FloorToInt((worldPosition.x - transform.position.x) / cellSize);
-			float snappedY = Mathf.FloorToInt((worldPosition.z - transform.position.z) / cellSize);
+			float snappedX = Mathf.FloorToInt((worldPosition.x - transform.position.x) / CellSize);
+			float snappedY = Mathf.FloorToInt((worldPosition.z - transform.position.z) / CellSize);
 
 			// Convert snapped position to grid indices
 			x = Mathf.FloorToInt(snappedX + gridSize.x / 2f);
@@ -154,7 +157,7 @@ namespace DT.GridSystem
 		{
 			if(!drawGizmos)return;
 			base.OnDrawGizmos();
-			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, 0, gridSize.y) * cellSize);
+			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, 0, gridSize.y) * CellSize);
 
 			for (int x = 0; x < gridSize.x; x++)
 			{
@@ -165,7 +168,7 @@ namespace DT.GridSystem
 					if (gridObject != null)
 					{
 						Vector3 objectPosition = GetWorldPosition(x, y, true);
-						Gizmos.DrawSphere(objectPosition, cellSize * 0.1f);
+						Gizmos.DrawSphere(objectPosition, CellSize * 0.1f);
 					}
 				}
 			}
@@ -176,9 +179,9 @@ namespace DT.GridSystem
 		public override Vector3 GetWorldPosition(int x, int y, bool snapToGrid = false)
 		{
 			if (!snapToGrid)
-				return new Vector3(x - gridSize.x / 2f, y - gridSize.y / 2f, 0) * cellSize + transform.position;
+				return new Vector3(x - gridSize.x / 2f, y - gridSize.y / 2f, 0) * CellSize + transform.position;
 			else
-				return (new Vector3(x - gridSize.x / 2f, y - gridSize.y / 2f, 0) * cellSize + transform.position) + new Vector3(cellSize, cellSize, 0) * 0.5f;
+				return (new Vector3(x - gridSize.x / 2f, y - gridSize.y / 2f, 0) * CellSize + transform.position) + new Vector3(CellSize, CellSize, 0) * 0.5f;
 		}
 
 		public override void GetGridPosition(Vector3 worldPosition, out int x, out int y)
@@ -187,8 +190,8 @@ namespace DT.GridSystem
 			//y = Mathf.FloorToInt((worldPosition.y - transform.position.y) / cellSize + gridSize.y / 2f);
 
 
-			float snappedX = Mathf.FloorToInt((worldPosition.x - transform.position.x) / cellSize);
-			float snappedY = Mathf.FloorToInt((worldPosition.y - transform.position.y) / cellSize);
+			float snappedX = Mathf.FloorToInt((worldPosition.x - transform.position.x) / CellSize);
+			float snappedY = Mathf.FloorToInt((worldPosition.y - transform.position.y) / CellSize);
 
 			// Convert snapped position to grid indices
 			x = Mathf.FloorToInt(snappedX + gridSize.x / 2f);
@@ -204,7 +207,7 @@ namespace DT.GridSystem
 			if(!drawGizmos)return;
 
 			base.OnDrawGizmos();
-			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, gridSize.y, 0) * cellSize);
+			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, gridSize.y, 0) * CellSize);
 
 			for (int x = 0; x < gridSize.x; x++)
 			{
@@ -215,7 +218,7 @@ namespace DT.GridSystem
 					if (gridObject != null)
 					{
 						Vector3 objectPosition = GetWorldPosition(x, y, true);
-						Gizmos.DrawSphere(objectPosition, cellSize * 0.1f);
+						Gizmos.DrawSphere(objectPosition, CellSize * 0.1f);
 					}
 				}
 			}
