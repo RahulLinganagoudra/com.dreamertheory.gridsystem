@@ -10,5 +10,12 @@
     },
     "license": "MIT",
     "dependencies": {
-    }
+    },
+    "samples": [
+        {
+            "displayName": "Object Placement",
+            "description": "Contains sample assets and scripts for object placement functionality",
+            "path": "Samples~/WindowsObjectPlacement"
+        }
+    ]
   }
