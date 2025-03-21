@@ -1,5 +1,4 @@
 using UnityEngine;
-using DT.GridSystem;
 
 namespace DT.GridSystem.Samples
 {
