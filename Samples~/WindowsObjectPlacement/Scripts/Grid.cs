@@ -1,11 +1,15 @@
 using UnityEngine;
 using DT.GridSystem;
-public class Grid : GridSystem3D<GameObject>
-{
 
-}
-public enum GridType
+namespace DT.GridSystem.Samples
 {
-	Square,
-	Hexagon
+	public class Grid : GridSystem3D<GameObject>
+	{
+
+	}
+	public enum GridType
+	{
+		Square,
+		Hexagon
+	}
 }
