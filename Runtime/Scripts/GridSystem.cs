@@ -5,14 +5,14 @@ namespace DT.GridSystem
 	public abstract class GridSystem<TGridObject> : MonoBehaviour
 	{
 		[SerializeField] protected Vector2Int gridSize;
-        [SerializeField] private float cellSize;
-        protected TGridObject[,] gridArray;
+		[SerializeField] private float cellSize;
+		protected TGridObject[,] gridArray;
 		public UnityEvent OnGridUpdated = new();
 		public Vector2Int GridSize => gridSize;
 
-       public float CellSize { get => cellSize; protected set => cellSize = value; }
+		public float CellSize { get => cellSize; protected set => cellSize = value; }
 
-        [SerializeField] protected bool drawGizmos = true;
+		[SerializeField] protected bool drawGizmos = true;
 		protected virtual void Awake()
 		{
 			gridArray = new TGridObject[gridSize.x, gridSize.y];
@@ -90,13 +90,24 @@ namespace DT.GridSystem
 			return GetGridObject(x, y);
 		}
 
-
+		public Vector3 SnapWorldPosition(Vector3 worldPosition)
+		{
+			int x, y;
+			GetGridPosition(worldPosition, out x, out y);
+			return GetWorldPosition(x, y, true);
+		}
+		public Vector2Int GetGridPosition(Vector3 worldPosition)
+		{
+			GetGridPosition(worldPosition, out int x, out int y);
+			return new Vector2Int(x, y);
+		}
+		
 		public abstract Vector3 GetWorldPosition(int x, int y, bool snapToGrid = false);
 		public abstract void GetGridPosition(Vector3 worldPosition, out int x, out int y);
 
 		public virtual void OnDrawGizmos()
 		{
-			if(!drawGizmos)return;
+			if (!drawGizmos) return;
 			gridArray ??= new TGridObject[gridSize.x, gridSize.y];
 			if (gridArray.GetLength(0) != gridSize.x || gridArray.GetLength(1) != gridSize.y)
 			{
@@ -155,7 +166,7 @@ namespace DT.GridSystem
 
 		public override void OnDrawGizmos()
 		{
-			if(!drawGizmos)return;
+			if (!drawGizmos) return;
 			base.OnDrawGizmos();
 			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, 0, gridSize.y) * CellSize);
 
@@ -204,7 +215,7 @@ namespace DT.GridSystem
 
 		public override void OnDrawGizmos()
 		{
-			if(!drawGizmos)return;
+			if (!drawGizmos) return;
 
 			base.OnDrawGizmos();
 			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, gridSize.y, 0) * CellSize);
