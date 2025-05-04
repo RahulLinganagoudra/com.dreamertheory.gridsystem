@@ -104,7 +104,7 @@ namespace DT.GridSystem
 
 		public abstract Vector3 GetWorldPosition(int x, int y, bool snapToGrid = false);
 		public abstract void GetGridPosition(Vector3 worldPosition, out int x, out int y);
-		public virtual Item GetGridObject(Vector2Int pos)
+		public virtual TGridObject GetGridObject(Vector2Int pos)
 		{
 			return GetGridObject(pos.x, pos.y);
 		}
