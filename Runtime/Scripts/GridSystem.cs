@@ -39,7 +39,7 @@ namespace DT.GridSystem
 		public int GetRowCount() => gridArray.GetLength(0);
 		public int GetColumnCount() => gridArray.GetLength(1);
 
-		public void AddGridObject(int x, int y, TGridObject value, bool snapToGrid = false)
+		public virtual void AddGridObject(int x, int y, TGridObject value, bool snapToGrid = false)
 		{
 			if (x >= 0 && y >= 0 && x < gridSize.x && y < gridSize.y)
 			{
@@ -47,7 +47,7 @@ namespace DT.GridSystem
 			}
 			OnGridUpdated?.Invoke();
 		}
-		public TGridObject RemoveGridObject(int x, int y)
+		public virtual TGridObject RemoveGridObject(int x, int y)
 		{
 			if (x >= 0 && y >= 0 && x < gridSize.x && y < gridSize.y)
 			{
@@ -58,7 +58,7 @@ namespace DT.GridSystem
 			}
 			return default;
 		}
-		public TGridObject GetGridObject(int x, int y)
+		public virtual TGridObject GetGridObject(int x, int y)
 		{
 			if (x >= 0 && y >= 0 && x < gridSize.x && y < gridSize.y)
 			{
@@ -66,7 +66,7 @@ namespace DT.GridSystem
 			}
 			return default;
 		}
-		public bool TryGetGridObject(int x, int y, out TGridObject gridObject)
+		public virtual bool TryGetGridObject(int x, int y, out TGridObject gridObject)
 		{
 			gridObject = GetGridObject(x, y);
 			if (gridObject != null)
@@ -75,7 +75,7 @@ namespace DT.GridSystem
 			}
 			return false;
 		}
-		public bool TryGetGridObject(Vector3 worldPosition, out TGridObject gridObject)
+		public virtual bool TryGetGridObject(Vector3 worldPosition, out TGridObject gridObject)
 		{
 			gridObject = GetGridObject(worldPosition);
 			if (gridObject != null)
@@ -84,13 +84,13 @@ namespace DT.GridSystem
 			}
 			return false;
 		}
-		public TGridObject GetGridObject(Vector3 worldPosition)
+		public virtual TGridObject GetGridObject(Vector3 worldPosition)
 		{
 			GetGridPosition(worldPosition, out int x, out int y);
 			return GetGridObject(x, y);
 		}
 
-		public Vector3 SnapWorldPosition(Vector3 worldPosition)
+		public virtual Vector3 SnapWorldPosition(Vector3 worldPosition)
 		{
 			int x, y;
 			GetGridPosition(worldPosition, out x, out y);
@@ -101,10 +101,17 @@ namespace DT.GridSystem
 			GetGridPosition(worldPosition, out int x, out int y);
 			return new Vector2Int(x, y);
 		}
-		
+
 		public abstract Vector3 GetWorldPosition(int x, int y, bool snapToGrid = false);
 		public abstract void GetGridPosition(Vector3 worldPosition, out int x, out int y);
-
+		public virtual Item GetGridObject(Vector2Int pos)
+		{
+			return GetGridObject(pos.x, pos.y);
+		}
+		public virtual bool IsInBounds(Vector2Int pos)
+		{
+			return pos.x >= 0 && pos.y >= 0 && pos.x < GridSize.x && pos.y < GridSize.y;
+		}
 		public virtual void OnDrawGizmos()
 		{
 			if (!drawGizmos) return;
