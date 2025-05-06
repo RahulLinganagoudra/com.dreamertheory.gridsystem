@@ -10,22 +10,24 @@ This manual covers architecture, usage, and function-by-function documentation w
 1. [📘 Introduction](#-introduction)
     
 2. [🧩 Concepts & Architecture](#-concepts--architecture)
+3. [📦 Installation](#📦-installation)
+
     
-3. [🔧 How It Works](#-how-it-works)
+4. [🔧 How It Works](#-how-it-works)
     
-4. [🚀 Getting Started](#-getting-started)
+5. [🚀 Getting Started](#-getting-started)
     
-5. [🏗️ Core Classes](#-core-classes)
+6. [🏗️ Core Classes](#-core-classes)
     
-6. [🛠️ API Reference](#-api-reference)
+7. [🛠️ API Reference](#-api-reference)
     
-7. [🧪 Usage Examples](#-usage-examples)
+8. [🧪 Usage Examples](#-usage-examples)
     
-8. [💡 Best Practices](#-best-practices)
+9. [💡 Best Practices](#-best-practices)
     
-9. [❓ FAQ](#-faq)
+10. [❓ FAQ](#-faq)
     
-10. [📄 License](#-license)
+11. [📄 License](#-license)
     
 
 ---
@@ -69,7 +71,41 @@ graph TD;
     B --> D[Your2DGridScript]
     C --> E[Your3DGridScript]
 ```
+---
 
+## 📦 Installation
+
+#### ✅ Option 1: Unity Package (Recommended)
+
+1. Open your Unity project.
+2. Go to `Window → Package Manager`.
+3. Click the **+** button → **Add package from Git URL…**
+4. Enter the URL:
+```
+https://github.com/YourUsername/DT.GridSystem.git
+```
+
+6. Click **Add** and Unity will install the package automatically.
+
+> ☝️ Make sure your repo has a `package.json` in the root or under `Packages/DT.GridSystem`.
+
+---
+
+#### 🛠 Option 2: Manual Import
+
+1. Download or clone the repo:
+
+``` bash :
+git clone https://github.com/YourUsername/DT.GridSystem.git
+```
+Copy the DT.GridSystem folder into your Unity project’s Assets directory.
+
+
+
+
+
+
+---
 
 
 ## 🔧 How It Works
