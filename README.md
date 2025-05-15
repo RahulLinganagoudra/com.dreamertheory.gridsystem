@@ -3,6 +3,12 @@
 A comprehensive guide to the **DT.GridSystem** — a generic Unity grid framework supporting both 2D (XY) and 3D (XZ) layouts.  
 This manual covers architecture, usage, and function-by-function documentation with clarity.
 
+[![Unity](https://img.shields.io/badge/Unity-2020%2B-white?logo=unity&labelColor=black)](https://unity.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Repo stars](https://img.shields.io/github/stars/RahulLinganagoudra/com.dreamertheory.gridsystem)](https://github.com/RahulLinganagoudra/com.dreamertheory.gridsystem))
+[![Made With ❤️](https://img.shields.io/badge/made%20with-%E2%9D%A4-red)](https://github.com/RahulLinganagoudra)
+
+
 ---
 
 ## 📚 Table of Contents
