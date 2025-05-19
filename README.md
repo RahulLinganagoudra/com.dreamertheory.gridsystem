@@ -16,7 +16,7 @@ This manual covers architecture, usage, and function-by-function documentation w
 1. [📘 Introduction](#-introduction)
     
 2. [🧩 Concepts & Architecture](#-concepts--architecture)
-3. [📦 Installation](#📦-installation)
+3. [📦 Installation](#-installation)
 
     
 4. [🔧 How It Works](#-how-it-works)
