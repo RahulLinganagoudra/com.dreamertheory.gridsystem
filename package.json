@@ -1,21 +1,26 @@
 {
-    "name": "com.dreamertheory.gridsystem",
-    "version": "1.0.0",
-    "displayName": "Dreamer's Grid System",
-    "description": "This is an easy package to use grid system.",
-    "unity": "2021.3",
-    "author": {
-      "name": "Shivanagouda L",
-      "email": "slinganagoudra@gmail.com"
+  "name": "com.dreamertheory.gridsystem",
+  "version": "1.0.0",
+  "displayName": "Dreamer's Grid System",
+  "description": "This is an easy package to use grid system.",
+  "unity": "2021.3",
+  "author": {
+    "name": "Shivanagouda L",
+    "email": "slinganagoudra@gmail.com"
+  },
+  "documentationUrl": "https://github.com/RahulLinganagoudra/com.dreamertheory.gridsystem#readme",
+  "license": "MIT",
+  "dependencies": {},
+  "samples": [
+    {
+      "displayName": "Object Placement",
+      "description": "Contains sample assets and scripts for object placement functionality",
+      "path": "Samples~/WindowsObjectPlacement"
     },
-    "license": "MIT",
-    "dependencies": {
-    },
-    "samples": [
-        {
-            "displayName": "Object Placement",
-            "description": "Contains sample assets and scripts for object placement functionality",
-            "path": "Samples~/WindowsObjectPlacement"
-        }
-    ]
-  }
+    {
+      "displayName": "Pathfinding sample",
+      "description": "Contains sample assets and scripts for showcasing pathfinding functionality",
+      "path": "Samples~/Pathfinding"
+    }
+  ]
+}
