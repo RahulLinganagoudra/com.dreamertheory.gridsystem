@@ -1,0 +1,16 @@
+{
+    "name": "com.dreamertheory.pathfindingsample",
+    "rootNamespace": "",
+    "references": [
+        "GUID:aa43d9a84488cfb41ab666d9a11011f9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

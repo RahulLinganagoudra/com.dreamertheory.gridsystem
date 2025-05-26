@@ -2,6 +2,10 @@ using UnityEngine;
 using UnityEngine.Events;
 namespace DT.GridSystem
 {
+	/// <summary>
+	/// this is a base class for grid systems that can be used to create 2D or 3D grids.
+	/// </summary>
+	/// <typeparam name="TGridObject">The objects that are stored in the grid</typeparam>
 	public abstract class GridSystem<TGridObject> : MonoBehaviour
 	{
 		[SerializeField] protected Vector2Int gridSize;
