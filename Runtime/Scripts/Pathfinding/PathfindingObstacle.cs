@@ -5,9 +5,8 @@ namespace DT.GridSystem.Pathfinding
 	public class PathfindingObstacle : MonoBehaviour
 	{
 		[SerializeField] PathfindingCullingMask cullingMask;
-		
+
 		public PathfindingCullingMask CullingMask { get => cullingMask; set => cullingMask = value; }
 
-		
 	}
 }

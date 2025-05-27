@@ -2,19 +2,34 @@ namespace DT.GridSystem.Pathfinding
 {
 	using System.Collections.Generic;
 	using UnityEngine;
+	public enum NavMeshArea
+	{
+		WALKABLE,
+		NOT_WALKABLE
+	}
 	[CreateAssetMenu(fileName = "NavmeshData", menuName = "Pathfinding/NavmeshData")]
 	public class NavmeshData : ScriptableObject
 	{
-		public enum NavMeshArea
-		{
-			WALKABLE,
-			NOT_WALKABLE
-		}
 
 		public class NodeCache
 		{
 			public NavMeshArea area;
 			public PathfindingCullingMask cullingMask;
+			public override string ToString()
+			{
+				string cullingMaskName;
+				if (cullingMask != null)
+				{
+					cullingMaskName = cullingMask.name;
+				}
+				else
+				{
+					cullingMaskName = "None";
+
+				}
+
+				return area.ToString() + " " + cullingMaskName;
+			}
 		}
 
 		[HideInInspector] public Vector2Int gridSize;
@@ -53,6 +68,10 @@ namespace DT.GridSystem.Pathfinding
 						else if (obj.TryGetComponent(out PathfindingObstacle obstacle))
 						{
 							cullingMask = obstacle.CullingMask;
+						}
+						else if (obj.TryGetComponent(out PathfindingModifier modifier))
+						{
+							isWalkable = NavMeshArea.WALKABLE == modifier.NavMeshArea;
 						}
 					}
 					walkableCells[pos] = isWalkable;

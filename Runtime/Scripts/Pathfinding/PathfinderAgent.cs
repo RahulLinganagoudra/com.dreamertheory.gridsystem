@@ -11,6 +11,11 @@ namespace DT.GridSystem.Pathfinding
 		private int pathIndex;
 		public float moveSpeed = 5f;
 
+#if UNITY_EDITOR
+	[SerializeField]	bool showPath = false;
+#endif
+
+
 		public PathfindingCullingMask CullingMask { get => cullingMask; set => cullingMask = value; }
 
 		public void Initialize(GridSystem<TGridObject> grid, AStarPathfinding pathfinding)
@@ -60,6 +65,19 @@ namespace DT.GridSystem.Pathfinding
 				pathIndex++;
 			}
 		}
+#if UNITY_EDITOR
+		private void OnDrawGizmos()
+		{
+			if (path == null || !path.hasPath) return;
+			for (int i = 1; i < path.wayPoints.Count; i++)
+			{
+				var start = path.wayPoints[i - 1];
+				var end = path.wayPoints[i];
+
+				Gizmos.DrawLine(grid.GetWorldPosition(start.x, start.y, true), grid.GetWorldPosition(end.x, end.y, true));
+			}
+		} 
+#endif
 	}
 
 }

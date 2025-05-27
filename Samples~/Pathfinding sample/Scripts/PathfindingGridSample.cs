@@ -16,7 +16,7 @@ namespace DT.GridSystem.Pathfinding.Samples
 				navmeshData = ScriptableObject.CreateInstance<NavmeshData>();
 			}
 			//Initialization
-			pathfinding = new AStarPathfinding(navmeshData, allowDiagonals: false);
+			pathfinding = new AStarPathfinding(new RectGridPathfinding(navmeshData, false));
 			navmeshData.BakeNavmesh(this);
 			pathfinderAgent3D.Initialize(this, pathfinding);
 		}
@@ -25,7 +25,7 @@ namespace DT.GridSystem.Pathfinding.Samples
 		public override GameObject CreateGridObject(GridSystem<GameObject> gridSystem, int x, int y)
 		{
 			//10% change of Obstacle
-			if (Random.Range(0, 100) < 10)
+			if (obstaclePrefab != null && Random.Range(0, 100) < 10)
 			{
 				var obstacle = Instantiate(obstaclePrefab).gameObject;
 				obstacle.transform.position = GetWorldPosition(x, y, true);

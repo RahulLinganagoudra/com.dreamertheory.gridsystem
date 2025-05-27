@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 namespace DT.GridSystem
@@ -138,112 +139,10 @@ namespace DT.GridSystem
 				}
 			}
 		}
-	}
-	public class GridSystem3D<TGridObject> : GridSystem<TGridObject>
-	{
-		public override Vector3 GetWorldPosition(int x, int y, bool snapToGrid = false)
+
+		internal Vector3 GetWorldPosition(Vector2Int vector2Int)
 		{
-			if (snapToGrid)
-			{
-				return (new Vector3(x - gridSize.x / 2f, 0, y - gridSize.y / 2f) * CellSize + transform.position) + new Vector3(CellSize, 0, CellSize) * 0.5f;
-			}
-			else
-			{
-				return new Vector3(x - gridSize.x / 2f, 0, y - gridSize.y / 2f) * CellSize + transform.position;
-			}
-		}
-
-		public override void GetGridPosition(Vector3 worldPosition, out int x, out int y)
-		{
-			//x = Mathf.FloorToInt((worldPosition.x - transform.position.x) / cellSize + gridSize.x / 2f);
-			//y = Mathf.FloorToInt((worldPosition.z - transform.position.z) / cellSize + gridSize.y / 2f);
-
-
-			//x = Mathf.FloorToInt((worldPosition.x - transform.position.x) / cellSize + gridSize.x / 2f);
-			//y = Mathf.FloorToInt((worldPosition.z - transform.position.z) / cellSize + gridSize.y / 2f);
-
-			// Snap world position to grid
-			float snappedX = Mathf.FloorToInt((worldPosition.x - transform.position.x) / CellSize);
-			float snappedY = Mathf.FloorToInt((worldPosition.z - transform.position.z) / CellSize);
-
-			// Convert snapped position to grid indices
-			x = Mathf.FloorToInt(snappedX + gridSize.x / 2f);
-			y = Mathf.FloorToInt(snappedY + gridSize.y / 2f);
-
-			// Clamp the grid indices to ensure they are within bounds
-			x = Mathf.Clamp(x, 0, gridSize.x - 1);
-			y = Mathf.Clamp(y, 0, gridSize.y - 1);
-		}
-
-		public override void OnDrawGizmos()
-		{
-			if (!drawGizmos) return;
-			base.OnDrawGizmos();
-			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, 0, gridSize.y) * CellSize);
-
-			for (int x = 0; x < gridSize.x; x++)
-			{
-				for (int y = 0; y < gridSize.y; y++)
-				{
-					// Draw the grid object at the center of the cell
-					TGridObject gridObject = GetGridObject(x, y);
-					if (gridObject != null)
-					{
-						Vector3 objectPosition = GetWorldPosition(x, y, true);
-						Gizmos.DrawSphere(objectPosition, CellSize * 0.1f);
-					}
-				}
-			}
-		}
-	}
-	public class GridSystem2D<TGridObject> : GridSystem<TGridObject>
-	{
-		public override Vector3 GetWorldPosition(int x, int y, bool snapToGrid = false)
-		{
-			if (!snapToGrid)
-				return new Vector3(x - gridSize.x / 2f, y - gridSize.y / 2f, 0) * CellSize + transform.position;
-			else
-				return (new Vector3(x - gridSize.x / 2f, y - gridSize.y / 2f, 0) * CellSize + transform.position) + new Vector3(CellSize, CellSize, 0) * 0.5f;
-		}
-
-		public override void GetGridPosition(Vector3 worldPosition, out int x, out int y)
-		{
-			//x = Mathf.FloorToInt((worldPosition.x - transform.position.x) / cellSize + gridSize.x / 2f);
-			//y = Mathf.FloorToInt((worldPosition.y - transform.position.y) / cellSize + gridSize.y / 2f);
-
-
-			float snappedX = Mathf.FloorToInt((worldPosition.x - transform.position.x) / CellSize);
-			float snappedY = Mathf.FloorToInt((worldPosition.y - transform.position.y) / CellSize);
-
-			// Convert snapped position to grid indices
-			x = Mathf.FloorToInt(snappedX + gridSize.x / 2f);
-			y = Mathf.FloorToInt(snappedY + gridSize.y / 2f);
-
-			// Clamp the grid indices to ensure they are within bounds
-			x = Mathf.Clamp(x, 0, gridSize.x - 1);
-			y = Mathf.Clamp(y, 0, gridSize.y - 1);
-		}
-
-		public override void OnDrawGizmos()
-		{
-			if (!drawGizmos) return;
-
-			base.OnDrawGizmos();
-			Gizmos.DrawWireCube(transform.position, new Vector3(gridSize.x, gridSize.y, 0) * CellSize);
-
-			for (int x = 0; x < gridSize.x; x++)
-			{
-				for (int y = 0; y < gridSize.y; y++)
-				{
-					// Draw the grid object at the center of the cell
-					TGridObject gridObject = GetGridObject(x, y);
-					if (gridObject != null)
-					{
-						Vector3 objectPosition = GetWorldPosition(x, y, true);
-						Gizmos.DrawSphere(objectPosition, CellSize * 0.1f);
-					}
-				}
-			}
+			throw new NotImplementedException();
 		}
 	}
 }
