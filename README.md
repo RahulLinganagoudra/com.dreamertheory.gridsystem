@@ -88,7 +88,7 @@ graph TD;
 3. Click the **+** button → **Add package from Git URL…**
 4. Enter the URL:
 ```
-https://github.com/YourUsername/DT.GridSystem.git
+https://github.com/RahulLinganagoudra/com.dreamertheory.gridsystem.git
 ```
 
 6. Click **Add** and Unity will install the package automatically.
@@ -102,7 +102,7 @@ https://github.com/YourUsername/DT.GridSystem.git
 1. Download or clone the repo:
 
 ``` bash :
-git clone https://github.com/YourUsername/DT.GridSystem.git
+git clone https://github.com/RahulLinganagoudra/com.dreamertheory.gridsystem.git
 ```
 Copy the DT.GridSystem folder into your Unity project’s Assets directory.
 
