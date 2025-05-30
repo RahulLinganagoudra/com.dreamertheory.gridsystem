@@ -34,7 +34,7 @@ namespace DT.GridSystem
                     float xPos = x * width + offsetX - gridSize.x * width * 0.5f;
                     float yPos = y * height - gridSize.y * height * 0.5f;
                     return new Vector3(
-                        xPos ,
+                        xPos,
                         0,
                         yPos
 
@@ -58,54 +58,55 @@ namespace DT.GridSystem
             }
         }
 
-		public override void GetGridPosition(Vector3 worldPosition, out int x, out int y)
-		{
-			Vector3 offsetCenter = new Vector3(CellSize, 0, CellSize) * 0.5f;
-			Vector3 local = worldPosition - transform.position - offsetCenter;
-
-			float size = CellSize;
-
-			switch (hexOrientation)
-			{
-				case HexOrientation.PointyTop:
-					float width = size;
-					float height = sqrt3Over2 * size;
-
-					float q = (local.x + gridSize.x * width * 0.5f) / width;
-					float r = (local.z + gridSize.y * height * 0.5f) / height;
-
-					int row = Mathf.RoundToInt(r);
-					float offsetX = (row % 2 == 0) ? 0 : 0.5f;
-					int col = Mathf.RoundToInt(q - offsetX);
-
-					x = Mathf.Clamp(col, 0, gridSize.x - 1);
-					y = Mathf.Clamp(row, 0, gridSize.y - 1);
-					break;
-
-				case HexOrientation.FlatTop:
-					float heightP = size;
-					float widthP = sqrt3Over2 * size;
-
-					float colF = (local.x + gridSize.x * widthP * 0.5f) / widthP;
-					float rowF = (local.z + gridSize.y * heightP * 0.5f) / heightP;
-
-					int colP = Mathf.RoundToInt(colF);
-					float offsetY = (colP % 2 == 0) ? 0 : 0.5f;
-					int rowP = Mathf.RoundToInt(rowF - offsetY);
-
-					x = Mathf.Clamp(colP, 0, gridSize.x - 1);
-					y = Mathf.Clamp(rowP, 0, gridSize.y - 1);
-					break;
-
-				default:
-					x = y = 0;
-					break;
-			}
-		}
-
-
-		public override void OnDrawGizmos()
+        public override void GetGridPosition(Vector3 worldPosition, out int x, out int y)
         {
+            Vector3 offsetCenter = new Vector3(CellSize, 0, CellSize) * 0.5f;
+            Vector3 local = worldPosition - transform.position - offsetCenter;
+
+            float size = CellSize;
+
+            switch (hexOrientation)
+            {
+                case HexOrientation.PointyTop:
+                    float width = size;
+                    float height = sqrt3Over2 * size;
+
+                    float q = (local.x + gridSize.x * width * 0.5f) / width;
+                    float r = (local.z + gridSize.y * height * 0.5f) / height;
+
+                    int row = Mathf.RoundToInt(r);
+                    float offsetX = (row % 2 == 0) ? 0 : 0.5f;
+                    int col = Mathf.RoundToInt(q - offsetX);
+
+                    x = Mathf.Clamp(col, 0, gridSize.x - 1);
+                    y = Mathf.Clamp(row, 0, gridSize.y - 1);
+                    break;
+
+                case HexOrientation.FlatTop:
+                    float heightP = size;
+                    float widthP = sqrt3Over2 * size;
+
+                    float colF = (local.x + gridSize.x * widthP * 0.5f) / widthP;
+                    float rowF = (local.z + gridSize.y * heightP * 0.5f) / heightP;
+
+                    int colP = Mathf.RoundToInt(colF);
+                    float offsetY = (colP % 2 == 0) ? 0 : 0.5f;
+                    int rowP = Mathf.RoundToInt(rowF - offsetY);
+
+                    x = Mathf.Clamp(colP, 0, gridSize.x - 1);
+                    y = Mathf.Clamp(rowP, 0, gridSize.y - 1);
+                    break;
+
+                default:
+                    x = y = 0;
+                    break;
+            }
+        }
+
+
+        public override void OnDrawGizmos()
+        {
+            if (!drawGizmos) return;
             sqrt3 = Mathf.Sqrt(3f);
             sqrt3Over2 = sqrt3 / 2f;
             for (int i = 0; i < gridSize.x; i++)
@@ -115,7 +116,34 @@ namespace DT.GridSystem
                     Vector3 position = GetWorldPosition(i, j, true);
                     Gizmos.color = Color.green;
                     Gizmos.DrawWireSphere(position, CellSize * 0.1f);
+                    Gizmos.color = Color.white;
+                    DrawHexOutline(position, CellSize * 0.5f);
                 }
+            }
+        }
+
+        void DrawHexOutline(Vector3 center, float size)
+        {
+            Vector3[] corners = new Vector3[7]; // 6 corners + wrap around to 0
+
+            for (int i = 0; i < 7; i++)
+            {
+                float angleDeg = 0; // -30 offset for flat-topped hexes
+                if (hexOrientation == HexOrientation.PointyTop)
+                {
+                    angleDeg = 60f * i - 30f; // -30 offset for flat-topped hexes
+                }
+                else
+                {
+                    angleDeg = 60f * i; // 0 offset for pointy-topped hexes
+                }
+                float angleRad = Mathf.Deg2Rad * angleDeg;
+                corners[i] = center + new Vector3(Mathf.Cos(angleRad), 0f, Mathf.Sin(angleRad)) * size;
+            }
+
+            for (int i = 0; i < 6; i++)
+            {
+                Gizmos.DrawLine(corners[i], corners[i + 1]);
             }
         }
     }
