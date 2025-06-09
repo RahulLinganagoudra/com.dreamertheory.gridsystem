@@ -110,7 +110,7 @@ namespace DT.GridSystem.Pathfinding
 		private readonly Vector2Int gridSize;
 		private readonly int cost;
 		private NavmeshData NavmeshData;
-
+		private bool pointyTop;
 
 		private static readonly Vector2Int[] evenQ = new Vector2Int[]
 		{
@@ -130,11 +130,12 @@ namespace DT.GridSystem.Pathfinding
 			new(0, 1), new(-1, +1), new(-1, 0),
 			new(0, -1), new(1, 0), new(+1, +1)
 		};
-		public HexGrid(Vector2Int gridSize, int cost, NavmeshData navmeshData)
+		public HexGrid(Vector2Int gridSize, bool pointyTop, int cost, NavmeshData navmeshData)
 		{
 			this.gridSize = gridSize;
 			this.cost = cost;
 			NavmeshData = navmeshData;
+			this.pointyTop = pointyTop;
 		}
 
 		public Vector2Int GridSize => gridSize;
@@ -142,7 +143,7 @@ namespace DT.GridSystem.Pathfinding
 		public List<Vector2Int> GetNeighbors(Vector2Int pos)
 		{
 			Vector2Int[] directions;
-			if (hexOrientation == HexOrientation.PointyTop)
+			if (pointyTop)
 			{
 				if (pos.y % 2 == 0)
 				{
