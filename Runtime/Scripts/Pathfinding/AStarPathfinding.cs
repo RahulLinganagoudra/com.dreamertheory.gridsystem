@@ -118,9 +118,18 @@ namespace DT.GridSystem.Pathfinding
 		};
 		private static readonly Vector2Int[] oddQ = new Vector2Int[]
 		{
-		new(+1, 0), new(+1, -1), new(0, -1), new(-1, 0), new(0, +1), new(+1, +1)
+			new(+1, 0), new(+1, -1), new(0, -1), new(-1, 0), new(0, +1), new(+1, +1)
 		};
-
+		private static readonly Vector2Int[] evenR = new Vector2Int[]
+		{
+			new(+0, 1), new(-1, 0), new(-1, -1),
+			new(0, -1), new(+1, -1), new(1, 0)
+		};
+		private static readonly Vector2Int[] oddR = new Vector2Int[]
+		{
+			new(0, 1), new(-1, +1), new(-1, 0),
+			new(0, -1), new(1, 0), new(+1, +1)
+		};
 		public HexGrid(Vector2Int gridSize, int cost, NavmeshData navmeshData)
 		{
 			this.gridSize = gridSize;
@@ -132,7 +141,30 @@ namespace DT.GridSystem.Pathfinding
 
 		public List<Vector2Int> GetNeighbors(Vector2Int pos)
 		{
-			var directions = (pos.y % 2 == 0) ? evenQ : oddQ;
+			Vector2Int[] directions;
+			if (hexOrientation == HexOrientation.PointyTop)
+			{
+				if (pos.y % 2 == 0)
+				{
+					directions = evenQ;
+				}
+				else
+				{
+					directions = oddQ;
+				}
+
+			}
+			else
+			{
+				if (pos.x % 2 == 0)
+				{
+					directions = evenR;
+				}
+				else
+				{
+					directions = oddR;
+				}
+			}
 			List<Vector2Int> result = new();
 			foreach (var dir in directions)
 			{
