@@ -51,31 +51,47 @@ PrefabInstance:
     - target: {fileID: 4221871073764514626, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 4930252310037133871, guid: 733200a3ab91b7a42be6f06d59db8853, type: 3}
+      objectReference: {fileID: 4930252310037133871, guid: 3a4168ddddc626f4e9bf9df1926e20f6, type: 3}
     - target: {fileID: 4711373131709971767, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.5
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 4711373131709971767, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4711373131709971767, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.5
+      value: -0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 4711373131709971767, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4711373131709971767, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4711373131709971767, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 90
+      value: -90
       objectReference: {fileID: 0}
+    - target: {fileID: 4711373131709971767, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291025495226049600, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291025495226049600, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e597d16f3c6924b48ad8aa7d2081da6d, type: 2}
+    - target: {fileID: 6291025495226049600, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5fa4efdc38128ca46a5727bd31b8eecd, type: 2}
     - target: {fileID: 7051412120484650125, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
       propertyPath: m_Name
       value: IBR
