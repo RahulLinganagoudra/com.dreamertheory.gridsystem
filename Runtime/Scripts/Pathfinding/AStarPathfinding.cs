@@ -109,8 +109,8 @@ namespace DT.GridSystem.Pathfinding
 	{
 		private readonly Vector2Int gridSize;
 		private readonly int cost;
-		private NavmeshData NavmeshData;
-		private bool pointyTop;
+		private readonly NavmeshData NavmeshData;
+		private readonly bool pointyTop;
 
 		private static readonly Vector2Int[] evenQ = new Vector2Int[]
 		{
@@ -153,7 +153,6 @@ namespace DT.GridSystem.Pathfinding
 				{
 					directions = oddQ;
 				}
-
 			}
 			else
 			{

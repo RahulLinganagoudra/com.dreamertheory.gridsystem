@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 
 namespace DT.GridSystem
@@ -22,6 +24,29 @@ namespace DT.GridSystem
 
 		protected float sqrt3;
 		protected float sqrt3Over2;
+
+
+		private static readonly Vector2Int[] evenQ = new Vector2Int[]
+		{
+			new(+1, 0), new(0, -1), new(-1, -1), new(-1, 0), new(-1, +1), new(0, +1)
+		};
+		private static readonly Vector2Int[] oddQ = new Vector2Int[]
+		{
+			new(+1, 0), new(+1, -1), new(0, -1), new(-1, 0), new(0, +1), new(+1, +1)
+		};
+		private static readonly Vector2Int[] evenR = new Vector2Int[]
+		{
+			new(+0, 1), new(-1, 0), new(-1, -1),
+			new(0, -1), new(+1, -1), new(1, 0)
+		};
+		private static readonly Vector2Int[] oddR = new Vector2Int[]
+		{
+			new(0, 1), new(-1, +1), new(-1, 0),
+			new(0, -1), new(1, 0), new(+1, +1)
+		};
+
+
+
 
 		/// <summary>
 		/// Initializes mathematical constants for hexagonal calculations.
@@ -64,6 +89,54 @@ namespace DT.GridSystem
 					return Vector3.zero;
 			}
 		}
+		/// <summary>
+		/// Returns a list of valid neighboring cell positions for a given hex cell in the grid,
+		/// taking into account the current hex orientation (FlatTop or PointyTop) and the grid boundaries.
+		/// </summary>
+		/// <param name="pos">The grid position (as a Vector2Int) for which to find neighbors.</param>
+		/// <returns>
+		/// A list of Vector2Int positions representing the adjacent cells that are within the grid bounds.
+		/// </returns>
+		/// <remarks>
+		/// The method automatically selects the correct neighbor offset pattern based on the grid's orientation
+		/// and the parity (even/odd) of the relevant coordinate, ensuring accurate neighbor calculation for both
+		/// flat-topped and pointy-topped hex layouts.
+		/// </remarks>
+		public List<Vector2Int> GetNeighbors(Vector2Int pos)
+		{
+			Vector2Int[] directions;
+			if (hexOrientation == HexOrientation.PointyTop)
+			{
+				if (pos.y % 2 == 0)
+				{
+					directions = evenQ;
+				}
+				else
+				{
+					directions = oddQ;
+				}
+			}
+			else
+			{
+				if (pos.x % 2 == 0)
+				{
+					directions = evenR;
+				}
+				else
+				{
+					directions = oddR;
+				}
+			}
+			List<Vector2Int> result = new();
+			foreach (var dir in directions)
+			{
+				var neighbor = pos + dir;
+				if (neighbor.x >= 0 && neighbor.y >= 0 && neighbor.x < GridSize.x && neighbor.y < GridSize.y)
+					result.Add(neighbor);
+			}
+			return result;
+		}
+
 
 		/// <summary>
 		/// Converts a world position into hex grid coordinates based on the selected orientation.
@@ -121,6 +194,7 @@ namespace DT.GridSystem
 		/// </summary>
 		public override void OnDrawGizmos()
 		{
+#if UNITY_EDITOR
 			if (!drawGizmos) return;
 			sqrt3 = Mathf.Sqrt(3f);
 			sqrt3Over2 = sqrt3 / 2f;
@@ -130,12 +204,16 @@ namespace DT.GridSystem
 				for (int j = 0; j < gridSize.y; j++)
 				{
 					Vector3 position = GetWorldPosition(i, j, true);
-					Gizmos.color = Color.green;
-					Gizmos.DrawWireSphere(position, CellSize * 0.1f);
+					//Gizmos.color = Color.green;
+					//Gizmos.DrawWireSphere(position, CellSize * 0.1f);
 					Gizmos.color = Color.white;
 					DrawHexOutline(position, CellSize * 0.5f);
+					if (showGridIndex)
+						UnityEditor.Handles.Label(position, $"{i},{j}");
 				}
 			}
+			    
+#endif
 		}
 
 		/// <summary>
