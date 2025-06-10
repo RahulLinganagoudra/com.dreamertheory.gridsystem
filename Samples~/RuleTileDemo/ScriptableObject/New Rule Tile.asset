@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8dd27e950a70be4a882bd5867359204, type: 3}
+  m_Name: New Rule Tile
+  m_EditorClassIdentifier: 
+  single: {fileID: 1422957133036963518, guid: 1fe714df3327ebd499c8b7bf1805c708, type: 3}
+  centerPrefab: {fileID: 7051412120484650125, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
+  topPrefab: {fileID: 1422957133036963518, guid: 6fca0e661ac532442bcad631b342ab6b, type: 3}
+  bottomPrefab: {fileID: 1422957133036963518, guid: 17d7fa07a51ff1a41aeb15e7242f17d3, type: 3}
+  leftPrefab: {fileID: 1422957133036963518, guid: 1f18fce66ea4fc84e84474d6074bd047, type: 3}
+  rightPrefab: {fileID: 1422957133036963518, guid: 9340ee143a7183745a4b55eab9a5518e, type: 3}
+  topLeftPrefab: {fileID: 1422957133036963518, guid: 2cbfc9b233e447d48b796ce48e594402, type: 3}
+  topRightPrefab: {fileID: 1422957133036963518, guid: bd283ca1f4d2aa04195c0c7acc1650e6, type: 3}
+  bottomLeftPrefab: {fileID: 1422957133036963518, guid: 55cc3e3a1a7bb0246bbb890b7d8af8db, type: 3}
+  bottomRightPrefab: {fileID: 1422957133036963518, guid: e7a338b43fc6cdd4291bffed3b5a32e3, type: 3}
+  invertedTopLeftPrefab: {fileID: 1422957133036963518, guid: 4c5c68e2bd878b14ab4715c4b1df4e2b, type: 3}
+  invertedTopRightPrefab: {fileID: 1422957133036963518, guid: a2187330080922b49a585f8ba814f6db, type: 3}
+  invertedBottomLeftPrefab: {fileID: 1422957133036963518, guid: 9fb80b8a64112f743838d0e9fba957a1, type: 3}
+  invertedBottomRightPrefab: {fileID: 1422957133036963518, guid: 3c63d364f1886ce42a068090661cb98c, type: 3}
+  forwardSlashPrefab: {fileID: 1422957133036963518, guid: fcfb075407c67ce4aa5643ef96b630d3, type: 3}
+  backwardSlashPrefab: {fileID: 1422957133036963518, guid: 9ad3eebc6f9440941816bd8d92825366, type: 3}
+  singleTopPrefab: {fileID: 1422957133036963518, guid: f21d8a37b24f91a4eb567f5cd36e3eaf, type: 3}
+  singleBottomPrefab: {fileID: 1422957133036963518, guid: 1e00d8e0bfb67c74eb3ded7e24e8ea9e, type: 3}
+  singleLeftPrefab: {fileID: 1422957133036963518, guid: 99ede50f48255ae40a4576115d565d73, type: 3}
+  singleRightPrefab: {fileID: 1422957133036963518, guid: f7486003b7d4e104f99d0f1bb8dc4942, type: 3}

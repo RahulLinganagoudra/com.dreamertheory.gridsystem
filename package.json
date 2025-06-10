@@ -21,6 +21,11 @@
       "displayName": "Pathfinding sample",
       "description": "Contains sample assets and scripts for showcasing pathfinding functionality",
       "path": "Samples~/Pathfinding"
+    },
+    {
+      "displayName": "Ruletile sample",
+      "description": "Contains sample assets and scripts for showcasing Ruletile functionality",
+      "path": "Samples~/RuleTileDemo"
     }
   ]
 }
