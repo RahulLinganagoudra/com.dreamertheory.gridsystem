@@ -67,10 +67,10 @@ namespace DT.GridSystem.Ruletile
 			// 2. Single neighbor
 			if (cardinalCount == 1)
 			{
-				if (top) return singleTopPrefab;
-				if (bottom) return singleBottomPrefab;
-				if (left) return singleLeftPrefab;
-				if (right) return singleRightPrefab;
+				if (top) return singleBottomPrefab;
+				if (bottom) return singleTopPrefab;
+				if (left) return singleRightPrefab;
+				if (right) return singleLeftPrefab;
 			}
 
 			// 3. Fully surrounded but with one missing diagonal -> inverted corners
