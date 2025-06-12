@@ -22,6 +22,9 @@ namespace DT.GridSystem.Ruletile
 		public GameObject leftPrefab;
 		public GameObject rightPrefab;
 
+		public GameObject horizontalPrefab;
+		public GameObject verticalPrefab;
+		public GameObject crossPrefab;
 		public GameObject topLeftPrefab;
 		public GameObject topRightPrefab;
 		public GameObject bottomLeftPrefab;
@@ -76,6 +79,7 @@ namespace DT.GridSystem.Ruletile
 			// 3. Fully surrounded but with one missing diagonal -> inverted corners
 			if (top && bottom && left && right)
 			{
+				if(!topLeft && !topRight && !bottomLeft && !bottomRight) return crossPrefab;
 				if (!topRight && !bottomLeft) return backwardSlashPrefab;
 				if (!topLeft && !bottomRight) return forwardSlashPrefab;
 				if (!topLeft) return invertedTopLeftPrefab;
@@ -89,6 +93,8 @@ namespace DT.GridSystem.Ruletile
 			if (!top && !right) return topRightPrefab;
 			if (!bottom && !left) return bottomLeftPrefab;
 			if (!bottom && !right) return bottomRightPrefab;
+			if (!bottom && !top) return horizontalPrefab;
+			if (!left && !right) return verticalPrefab;
 
 			// 5. Edges (only one side missing)
 			if (!top) return topPrefab;
