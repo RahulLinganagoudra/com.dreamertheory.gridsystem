@@ -14,6 +14,7 @@ namespace DT.GridSystem
 	{
 		[SerializeField] protected Vector2Int gridSize;
 		[SerializeField] private float cellSize;
+		[SerializeField] public bool snap = false;
 		[SerializeField] protected bool drawGizmos = true;
 		[SerializeField] protected bool showGridIndex = false;
 		/// <summary>
