@@ -1,6 +1,6 @@
 {
   "name": "com.dreamertheory.gridsystem",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "displayName": "Dreamer's Grid System",
   "description": "This is an easy package to use grid system.",
   "unity": "2021.3",
