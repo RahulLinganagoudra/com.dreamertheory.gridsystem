@@ -24,8 +24,8 @@ namespace DT.GridSystem.Ruletile
         }
 
         [SerializeField]
-        private List<PlacedTile> placedTileList = new List<PlacedTile>();
-        private HashSet<Vector2Int> selectedCells = new();
+        protected List<PlacedTile> placedTileList = new List<PlacedTile>();
+        protected HashSet<Vector2Int> selectedCells = new();
         [SerializeField] private Color selectedColor = new(1f, 0.6f, 0.2f, 0.4f); // orange highlight
         private bool enableEditing;
 
