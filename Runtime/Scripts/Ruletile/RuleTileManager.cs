@@ -10,7 +10,7 @@ namespace DT.GridSystem.Ruletile
     public class RuleTileManger : GridSystem3D<GameObject>
     {
         public Transform container;
-        [SerializeField] RuleTile ruleTile;
+        [SerializeField] protected RuleTile ruleTile;
 
         // Only keep this runtime reference for generated tiles
         protected Dictionary<Vector2Int, GameObject> placedTiles = new();
