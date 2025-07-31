@@ -13,7 +13,7 @@ namespace DT.GridSystem.Ruletile
         [SerializeField] RuleTile ruleTile;
 
         // Only keep this runtime reference for generated tiles
-        private Dictionary<Vector2Int, GameObject> placedTiles = new();
+        protected Dictionary<Vector2Int, GameObject> placedTiles = new();
 
 #if UNITY_EDITOR
         [System.Serializable]
@@ -27,21 +27,21 @@ namespace DT.GridSystem.Ruletile
         protected List<PlacedTile> placedTileList = new List<PlacedTile>();
         protected HashSet<Vector2Int> selectedCells = new();
         [SerializeField] private Color selectedColor = new(1f, 0.6f, 0.2f, 0.4f); // orange highlight
-        private bool enableEditing;
+        protected bool enableEditing;
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             if (!Application.isPlaying)
                 SceneView.duringSceneGui += OnSceneGUI;
             RebuildDictionary();
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             SceneView.duringSceneGui -= OnSceneGUI;
         }
 
-        private void OnSceneGUI(SceneView sceneView)
+        protected virtual void OnSceneGUI(SceneView sceneView)
         {
             Handles.color = Color.gray;
 
@@ -67,14 +67,14 @@ namespace DT.GridSystem.Ruletile
             HandleClick(sceneView);
         }
 
-        private void HandleClick(SceneView sceneView)
+        protected virtual void HandleClick(SceneView sceneView)
         {
             if (!enableEditing) return;
             Event e = Event.current;
             if (e.type == EventType.MouseDown && e.button == 0 && !e.alt)
             {
                 Ray worldRay = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-                if (Physics.Raycast(worldRay, out RaycastHit hit)) return;
+                //if (Physics.Raycast(worldRay, out RaycastHit hit)) return;
 
                 Plane plane = new Plane(Vector3.up, transform.position);
                 if (plane.Raycast(worldRay, out float distance))
@@ -125,7 +125,7 @@ namespace DT.GridSystem.Ruletile
             }
         }
 
-        public void GenerateGrid()
+        public virtual void GenerateGrid()
         {
             if (container == null)
             {
@@ -161,7 +161,7 @@ namespace DT.GridSystem.Ruletile
             SyncPlacedTileList();
         }
 
-        public void DeleteSelectedTiles()
+        public virtual void DeleteSelectedTiles()
         {
             HashSet<Vector2Int> neighborsToUpdate = new HashSet<Vector2Int>();
 
@@ -227,14 +227,14 @@ namespace DT.GridSystem.Ruletile
             placedTiles[pos] = instance;
         }
 
-        public void ClearSelection()
+        public virtual void ClearSelection()
         {
             selectedCells.Clear();
             SceneView.RepaintAll();
             SyncPlacedTileList();
         }
 
-        public void ToggleEditing()
+        public virtual void ToggleEditing()
         {
             enableEditing = !enableEditing;
             if (!enableEditing)
@@ -242,7 +242,7 @@ namespace DT.GridSystem.Ruletile
                 ClearSelection();
             }
         }
-        public bool IsEditing()
+        public virtual bool IsEditing()
         {
             return enableEditing;
         }
