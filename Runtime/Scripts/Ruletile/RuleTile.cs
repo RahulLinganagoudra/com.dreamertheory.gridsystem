@@ -19,7 +19,7 @@ namespace DT.GridSystem.Ruletile
 		public abstract RuleTilePrefabResult GetPrefabForPosition(int x, int y, Dictionary<Vector2Int, GameObject> placedTiles, HashSet<Vector2Int> selectedCells);
 	}
 
-	[CreateAssetMenu]
+	[CreateAssetMenu(fileName = "RuleTile", menuName = "DT/GridSystem/RuleTile")]
 	public class RuleTile : BaseRuleTile
 	{
 		[Header("Tile Prefabs")]
@@ -223,15 +223,6 @@ namespace DT.GridSystem.Ruletile
 
 			// 7. Surrounded or middle
 			return new RuleTilePrefabResult(centerPrefab, Quaternion.identity);
-		}
-	}
-	[CreateAssetMenu]
-	public class ObjectBrush : BaseRuleTile
-	{
-		[SerializeField] GameObject objectToPaint;
-		override public RuleTilePrefabResult GetPrefabForPosition(int x, int y, Dictionary<Vector2Int, GameObject> placedTiles, HashSet<Vector2Int> selectedCells)
-		{
-			return new RuleTilePrefabResult(objectToPaint, Quaternion.identity);
 		}
 	}
 }

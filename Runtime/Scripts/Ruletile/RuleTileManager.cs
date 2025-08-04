@@ -9,38 +9,43 @@ namespace DT.GridSystem.Ruletile
     [ExecuteAlways]
     public class RuleTileManger : GridSystem3D<GameObject>
     {
-        public Transform container;
-        [SerializeField] protected RuleTile ruleTile;
-
-        // Only keep this runtime reference for generated tiles
-        protected Dictionary<Vector2Int, GameObject> placedTiles = new();
-
-#if UNITY_EDITOR
         [System.Serializable]
         public struct PlacedTile
         {
             public Vector2Int position;
             public GameObject tile;
         }
+        public Transform container;
+        [SerializeField] protected RuleTile ruleTile;
+
+        // Only keep this runtime reference for generated tiles
+        protected Dictionary<Vector2Int, GameObject> placedTiles = new();
 
         [SerializeField]
         protected List<PlacedTile> placedTileList = new List<PlacedTile>();
+        
+#if UNITY_EDITOR
         protected HashSet<Vector2Int> selectedCells = new();
         [SerializeField] private Color selectedColor = new(1f, 0.6f, 0.2f, 0.4f); // orange highlight
         protected bool enableEditing;
+#endif
 
         protected virtual void OnEnable()
         {
+#if UNITY_EDITOR
             if (!Application.isPlaying)
                 SceneView.duringSceneGui += OnSceneGUI;
+#endif
             RebuildDictionary();
         }
 
         protected virtual void OnDisable()
         {
+#if UNITY_EDITOR
             SceneView.duringSceneGui -= OnSceneGUI;
+#endif
         }
-
+#if UNITY_EDITOR
         protected virtual void OnSceneGUI(SceneView sceneView)
         {
             Handles.color = Color.gray;
@@ -106,15 +111,7 @@ namespace DT.GridSystem.Ruletile
             }
         }
 
-        private void RebuildDictionary()
-        {
-            placedTiles.Clear();
-            foreach (var pt in placedTileList)
-            {
-                if (pt.tile != null)
-                    placedTiles[pt.position] = pt.tile;
-            }
-        }
+        
 
         private void SyncPlacedTileList()
         {
@@ -247,7 +244,15 @@ namespace DT.GridSystem.Ruletile
             return enableEditing;
         }
 #endif
-
+        private void RebuildDictionary()
+        {
+            placedTiles.Clear();
+            foreach (var pt in placedTileList)
+            {
+                if (pt.tile != null)
+                    placedTiles[pt.position] = pt.tile;
+            }
+        }
         // RUNTIME: Only keep reference for generated tiles
         public void DeleteAllChildren()
         {
