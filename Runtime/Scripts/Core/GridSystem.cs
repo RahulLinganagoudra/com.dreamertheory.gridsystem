@@ -12,8 +12,8 @@ namespace DT.GridSystem
 	/// </remarks>
 	public abstract class GridSystem<TGridObject> : MonoBehaviour
 	{
-		[SerializeField] protected Vector2Int gridSize;
-		[SerializeField] private float cellSize;
+		[SerializeField] protected Vector2Int gridSize = new Vector2Int(5, 5);
+		[SerializeField] private float cellSize = 1;
 		[SerializeField] public bool snap = false;
 		[SerializeField] protected bool drawGizmos = true;
 		[SerializeField] protected bool showGridIndex = false;
