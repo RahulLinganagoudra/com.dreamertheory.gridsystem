@@ -23,7 +23,7 @@ namespace DT.GridSystem.Ruletile
 
         [SerializeField]
         protected List<PlacedTile> placedTileList = new List<PlacedTile>();
-        
+
 #if UNITY_EDITOR
         protected HashSet<Vector2Int> selectedCells = new();
         [SerializeField] private Color selectedColor = new(1f, 0.6f, 0.2f, 0.4f); // orange highlight
@@ -244,7 +244,7 @@ namespace DT.GridSystem.Ruletile
             return enableEditing;
         }
 #endif
-        private void RebuildDictionary()
+        protected void RebuildDictionary()
         {
             placedTiles.Clear();
             foreach (var pt in placedTileList)
