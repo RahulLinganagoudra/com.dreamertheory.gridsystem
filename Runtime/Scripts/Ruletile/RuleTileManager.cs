@@ -349,6 +349,17 @@ namespace DT.GridSystem.Ruletile
 		{
 			return enableEditing;
 		}
+		public virtual void SelectAllCells()
+		{
+			selectedCells.Clear();
+			for (int x = 0; x < gridSize.x; x++)
+			{
+				for (int y = 0; y < gridSize.y; y++)
+				{
+					selectedCells.Add(new Vector2Int(x, y));
+				}
+			}
+		}
 
 		private void SelectCellsInBox(Vector2 start, Vector2 end, Camera sceneCamera)
 		{

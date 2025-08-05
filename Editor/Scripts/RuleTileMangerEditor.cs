@@ -93,6 +93,13 @@ namespace DT.GridSystem.Ruletile
 			var generator = Target;
 			generator.ToggleEditing();
 		}
+		[MenuItem("DT/Toggle editing &a")]
+		public static void SelectAll()
+		{
+			if (Target == null) return;
+			var generator = Target;
+			generator.SelectAllCells();
+		}
 	}
 }
 #endif
