@@ -343,6 +343,9 @@ namespace DT.GridSystem.Ruletile
 			{
 				ClearSelection();
 			}
+#if UNITY_EDITOR
+    		UnityEditor.EditorUtility.SetDirty(this);
+#endif
 		}
 
 		public virtual bool IsEditing()
@@ -398,7 +401,7 @@ namespace DT.GridSystem.Ruletile
 		}
 
 		// RUNTIME: Only keep reference for generated tiles
-		public void DeleteAllChildren()
+		public virtual void DeleteAllChildren()
 		{
 #if UNITY_EDITOR
 			if (!Application.isPlaying)
