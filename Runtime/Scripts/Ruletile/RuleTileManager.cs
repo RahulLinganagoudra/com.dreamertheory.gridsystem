@@ -16,7 +16,7 @@ namespace DT.GridSystem.Ruletile
 			public GameObject tile;
 		}
 
-		public Transform container;
+		private Transform container;
 		[SerializeField] protected RuleTile ruleTile;
 
 		// Only keep this runtime reference for generated tiles
@@ -32,6 +32,19 @@ namespace DT.GridSystem.Ruletile
 		private Vector2 boxSelectStart;
 		private Vector2 boxSelectEnd;
 		private bool isBoxSelecting = false;
+
+		public Transform Container
+		{
+			get
+			{
+				if (container == null)
+				{
+					return transform;
+				}
+				return container;
+			}
+			set => container = value;
+		}
 #endif
 
 		protected virtual void OnEnable()
@@ -198,7 +211,7 @@ namespace DT.GridSystem.Ruletile
 
 		public virtual void GenerateGrid()
 		{
-			if (container == null)
+			if (Container == null)
 			{
 				Debug.LogWarning("No container assigned.");
 				return;
@@ -319,7 +332,7 @@ namespace DT.GridSystem.Ruletile
 			var result = ruleTile.GetPrefabForPosition(x, y, placedTiles, selectedCells);
 			if (result.prefab == null) return;
 
-			GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(result.prefab, container == null ? transform : container);
+			GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(result.prefab, Container == null ? transform : Container);
 			Undo.RegisterCreatedObjectUndo(instance, "Create Rule Tile");
 
 			instance.transform.position = GetWorldPosition(x, y, true);

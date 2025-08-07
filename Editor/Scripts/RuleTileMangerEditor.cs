@@ -92,7 +92,7 @@ namespace DT.GridSystem.Ruletile
 			if (Target == null) return;
 			var generator = Target;
 			generator.ToggleEditing();
-			Repaint();
+			EditorUtility.SetDirty(generator);
 		}
 		[MenuItem("DT/Select all tiles while editing &a")]
 		public static void SelectAll()

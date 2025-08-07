@@ -8,6 +8,7 @@ namespace DT.GridSystem.Pathfinding.Samples
 		[SerializeField] PathfindingObstacle obstaclePrefab;
 		[SerializeField] PathfinderAgent3D pathfinderAgent3D;
 		Camera Camera;
+
 		private void Start()
 		{
 			Camera = Camera.main;
@@ -16,7 +17,7 @@ namespace DT.GridSystem.Pathfinding.Samples
 				navmeshData = ScriptableObject.CreateInstance<NavmeshData>();
 			}
 			//Initialization
-			pathfinding = new AStarPathfinding(new RectGridPathfinding(navmeshData, false));
+			pathfinding = new RectGridPathfinding<GameObject>(this,navmeshData, false);
 			navmeshData.BakeNavmesh(this);
 			pathfinderAgent3D.Initialize(this, pathfinding);
 		}

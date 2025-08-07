@@ -4,10 +4,13 @@ using UnityEditor;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
 
 [InitializeOnLoad]
 public static class SnapControllerEditor
 {
+    private static bool isDragging = false;
+    
     static SnapControllerEditor()
     {
         SceneView.duringSceneGui += OnSceneGUI;
@@ -49,8 +52,24 @@ public static class SnapControllerEditor
         if (Tools.current != Tool.Move)
             return;
 
-        // Only process on mouse drag or mouse up (Unity 6+ best practice)
-        if (Event.current.type != EventType.MouseDrag && Event.current.type != EventType.MouseUp)
+        Event currentEvent = Event.current;
+
+        // Track dragging state
+        if (currentEvent.type == EventType.MouseDown && currentEvent.button == 0)
+        {
+            isDragging = true;
+        }
+        else if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
+        {
+            isDragging = false;
+        }
+
+        // Only process during drag or on mouse up
+        if (currentEvent.type != EventType.MouseDrag && currentEvent.type != EventType.MouseUp)
+            return;
+
+        // Skip if no objects selected
+        if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
             return;
 
         var gridSystems = GameObject.FindObjectsOfType<MonoBehaviour>()
@@ -96,38 +115,43 @@ public static class SnapControllerEditor
             if (getWorldPos == null || (getGridCoords == null && getGridCoordsOut == null))
                 continue;
 
+            // Process all selected objects
             foreach (var obj in Selection.gameObjects)
             {
                 if (obj == null || obj == ((MonoBehaviour)gridSystem).gameObject)
                     continue;
 
-                if (Selection.activeGameObject != obj)
-                    continue;
-
-                Handles.color = Color.green;
-                Vector3 oldPos = obj.transform.position;
-                Vector3 newPos = Handles.PositionHandle(oldPos, Quaternion.identity);
-
-                // Unity 6+: Compare directly, don't rely on BeginChangeCheck/EndChangeCheck
-                if (oldPos != newPos)
+                Vector3 currentPos = obj.transform.position;
+                
+                // Calculate snapped position
+                Vector2Int gridCoords;
+                if (getGridCoords != null)
                 {
-                    Undo.RecordObject(obj.transform, "Snap Move");
-                    Vector2Int gridCoords;
-                    if (getGridCoords != null)
-                    {
-                        gridCoords = (Vector2Int)getGridCoords.Invoke(gridSystem, new object[] { newPos });
-                    }
-                    else
-                    {
-                        object[] parameters = new object[] { newPos, 0, 0 };
-                        getGridCoordsOut.Invoke(gridSystem, parameters);
-                        gridCoords = new Vector2Int((int)parameters[1], (int)parameters[2]);
-                    }
-                    var snappedPos = getWorldPos.Invoke(gridSystem, new object[] { gridCoords.x, gridCoords.y, true });
-                    obj.transform.position = (Vector3)snappedPos;
+                    gridCoords = (Vector2Int)getGridCoords.Invoke(gridSystem, new object[] { currentPos });
+                }
+                else
+                {
+                    object[] parameters = new object[] { currentPos, 0, 0 };
+                    getGridCoordsOut.Invoke(gridSystem, parameters);
+                    gridCoords = new Vector2Int((int)parameters[1], (int)parameters[2]);
+                }
+
+                var snappedPos = (Vector3)getWorldPos.Invoke(gridSystem, new object[] { gridCoords.x, gridCoords.y, true });
+
+                // Only update if position actually changed
+                if (Vector3.Distance(currentPos, snappedPos) > 0.001f)
+                {
+                    Undo.RecordObject(obj.transform, "Snap Move Multiple Objects");
+                    obj.transform.position = snappedPos;
                 }
             }
+
+            // Only process first valid grid system
+            break;
         }
+
+        // Repaint scene view to show updates
+        SceneView.RepaintAll();
     }
 
     static bool IsDerivedFromGridSystem(Type type)

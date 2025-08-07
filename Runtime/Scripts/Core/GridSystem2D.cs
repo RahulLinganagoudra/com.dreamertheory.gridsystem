@@ -11,7 +11,7 @@ namespace DT.GridSystem
 	/// This class extends the generic <see cref="GridSystem{TGridObject}"/> class to implement 
 	/// functionality specific to 2D grid layouts, such as 2D position snapping and coordinate translation.
 	/// </remarks>
-	public class GridSystem2D<TGridObject> : GridSystem<TGridObject>
+	public class GridSystem2D<TGridObject> : RectGridSystem<TGridObject>
 	{
 		/// <summary>
 		/// Converts grid coordinates (x, y) to a world position.
@@ -47,6 +47,7 @@ namespace DT.GridSystem
 			x = Mathf.Clamp(x, 0, gridSize.x - 1);
 			y = Mathf.Clamp(y, 0, gridSize.y - 1);
 		}
+
 
 		/// <summary>
 		/// Draws gizmos in the Unity Editor to visualize the grid layout and the objects stored in the grid.

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -30,12 +31,12 @@ namespace DT.GridSystem
 		/// <summary>
 		/// Gets the current grid size.
 		/// </summary>
-		public Vector2Int GridSize => gridSize;
+		public virtual Vector2Int GridSize => gridSize;
 
 		/// <summary>
 		/// Gets or sets the size of each grid cell.
 		/// </summary>
-		public float CellSize { get => cellSize; protected set => cellSize = value; }
+		public virtual float CellSize { get => cellSize; protected set => cellSize = value; }
 
 		/// <summary>
 		/// Initializes the grid by creating default grid objects.
@@ -180,6 +181,8 @@ namespace DT.GridSystem
 		/// </summary>
 		public abstract Vector3 GetWorldPosition(int x, int y, bool snapToGrid = false);
 
+		public abstract List<Vector2Int> GetNeighbors(Vector2Int pos);
+
 		/// <summary>
 		/// Converts a world position to grid coordinates.
 		/// Must be implemented by derived classes.
@@ -243,5 +246,62 @@ namespace DT.GridSystem
 		{
 			return GetWorldPosition(vector2Int.x, vector2Int.y, true);
 		}
+	}
+	public abstract class RectGridSystem<T> : GridSystem<T> {
+
+		private static readonly Vector2Int[] directionsWithNeighbours = new Vector2Int[]
+		{
+			new(+0, 1),//right
+			new(0, -1),//left
+			new(1, 0),//top
+			new(-1, 0),//bottom
+			new(1, 1),//1st Quadrant
+			new(-1, 1),//2nd Quadrant
+			new(-1, -1),//3rd Quadrant
+			new(1, -1)//4th Quadrant
+		};
+		private static readonly Vector2Int[] directions = new Vector2Int[]
+		{
+			new(+0, 1),//right
+			new(0, -1),//left
+			new(1, 0),//top
+			new(-1, 0)
+		};
+		public override List<Vector2Int> GetNeighbors(Vector2Int pos)
+		{
+			List<Vector2Int> result = new();
+			foreach (var dir in directionsWithNeighbours)
+			{
+				var neighbor = pos + dir;
+				if (neighbor.x >= 0 && neighbor.y >= 0 && neighbor.x < GridSize.x && neighbor.y < GridSize.y)
+					result.Add(neighbor);
+			}
+			return result;
+		}
+
+		public virtual List<Vector2Int> GetNeighbors(Vector2Int pos, bool includeDiagonals)
+		{
+			List<Vector2Int> result = new();
+			if (includeDiagonals)
+			{
+				foreach (var dir in directionsWithNeighbours)
+				{
+					var neighbor = pos + dir;
+					if (neighbor.x >= 0 && neighbor.y >= 0 && neighbor.x < GridSize.x && neighbor.y < GridSize.y)
+						result.Add(neighbor);
+				}
+			}
+			else
+			{
+				foreach (var dir in directions)
+				{
+					var neighbor = pos + dir;
+					if (neighbor.x >= 0 && neighbor.y >= 0 && neighbor.x < GridSize.x && neighbor.y < GridSize.y)
+						result.Add(neighbor);
+				}
+			}
+			return result;
+		}
+
 	}
 }

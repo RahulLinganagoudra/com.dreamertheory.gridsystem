@@ -2,34 +2,27 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace DT.GridSystem.Pathfinding
 {
-	public interface IPathfindingGrid
+	public abstract class AStarPathfinding
 	{
-		List<Vector2Int> GetNeighbors(Vector2Int position);
-		int GetHeuristic(Vector2Int from, Vector2Int to);
-		int GetMoveCost(Vector2Int from, Vector2Int to); // Optional, default to 10
-		bool IsWalkable(Vector2Int position, PathfindingCullingMask mask = null);
-		Vector2Int GridSize { get; }
-	}
+		private NavmeshData navmeshData;
+		public abstract Vector2Int GridSize { get; }
+		public NavmeshData NavmeshData { get => navmeshData; protected set => navmeshData = value; }
 
-	public class AStarPathfinding
-	{
-		private readonly IPathfindingGrid grid;
-
-		public AStarPathfinding(IPathfindingGrid grid)
-		{
-			this.grid = grid;
-		}
+		public abstract List<Vector2Int> GetNeighbors(Vector2Int pos);
+		public abstract int GetHeuristic(Vector2Int from, Vector2Int to);
+		public abstract int GetMoveCost(Vector2Int from, Vector2Int to); // Optional, default to 10
+		public abstract bool IsWalkable(Vector2Int position, PathfindingCullingMask mask = null);
 
 		public Path FindPath(Vector2Int start, Vector2Int end, PathfindingCullingMask cullingMask = null)
 		{
-			if (!grid.IsWalkable(start, cullingMask) || !grid.IsWalkable(end, cullingMask))
+			if (!IsWalkable(start, cullingMask) || !IsWalkable(end, cullingMask))
 				return new Path { hasPath = false, pathDistance = 0 };
 
 
 			List<PathNode> openSet = new();
 			HashSet<Vector2Int> closedSet = new();
 
-			PathNode startNode = new(start, null, 0, grid.GetHeuristic(start, end));
+			PathNode startNode = new(start, null, 0, GetHeuristic(start, end));
 			openSet.Add(startNode);
 
 			while (openSet.Count > 0)
@@ -42,14 +35,14 @@ namespace DT.GridSystem.Pathfinding
 				if (current.Position == end)
 					return RetracePath(current);
 
-				foreach (var neighbor in grid.GetNeighbors(current.Position))
+				foreach (var neighbor in GetNeighbors(current.Position))
 				{
-					if (closedSet.Contains(neighbor) || !grid.IsWalkable(neighbor, cullingMask))
+					if (closedSet.Contains(neighbor) || !IsWalkable(neighbor, cullingMask))
 						continue;
 
-					int moveCost = grid.GetMoveCost(current.Position, neighbor);
+					int moveCost = GetMoveCost(current.Position, neighbor);
 					int newG = current.G + moveCost;
-					int h = grid.GetHeuristic(neighbor, end);
+					int h = GetHeuristic(neighbor, end);
 
 					PathNode neighborNode = new(neighbor, current, newG, h);
 					var existing = openSet.Find(n => n.Position == neighbor);
@@ -105,86 +98,34 @@ namespace DT.GridSystem.Pathfinding
 		public float pathDistance;
 		public List<Vector2Int> wayPoints;
 	}
-	public class HexGrid : IPathfindingGrid
+	public class HexGrid<T> : AStarPathfinding
 	{
-		private readonly Vector2Int gridSize;
+		HexGridSystem3D<T> hexGridSystem;
 		private readonly int cost;
-		private readonly NavmeshData NavmeshData;
-		private readonly bool pointyTop;
 
-		private static readonly Vector2Int[] evenQ = new Vector2Int[]
+		public HexGrid(HexGridSystem3D<T> hexGridSystem, int cost, NavmeshData navmeshData)
 		{
-			new(+1, 0), new(0, -1), new(-1, -1), new(-1, 0), new(-1, +1), new(0, +1)
-		};
-		private static readonly Vector2Int[] oddQ = new Vector2Int[]
-		{
-			new(+1, 0), new(+1, -1), new(0, -1), new(-1, 0), new(0, +1), new(+1, +1)
-		};
-		private static readonly Vector2Int[] evenR = new Vector2Int[]
-		{
-			new(+0, 1), new(-1, 0), new(-1, -1),
-			new(0, -1), new(+1, -1), new(1, 0)
-		};
-		private static readonly Vector2Int[] oddR = new Vector2Int[]
-		{
-			new(0, 1), new(-1, +1), new(-1, 0),
-			new(0, -1), new(1, 0), new(+1, +1)
-		};
-		public HexGrid(Vector2Int gridSize, bool pointyTop, int cost, NavmeshData navmeshData)
-		{
-			this.gridSize = gridSize;
+			this.hexGridSystem = hexGridSystem;
 			this.cost = cost;
 			NavmeshData = navmeshData;
-			this.pointyTop = pointyTop;
 		}
 
-		public Vector2Int GridSize => gridSize;
+		public override Vector2Int GridSize => NavmeshData.gridSize;
 
-		public List<Vector2Int> GetNeighbors(Vector2Int pos)
+		public override List<Vector2Int> GetNeighbors(Vector2Int pos)
 		{
-			Vector2Int[] directions;
-			if (pointyTop)
-			{
-				if (pos.y % 2 == 0)
-				{
-					directions = evenQ;
-				}
-				else
-				{
-					directions = oddQ;
-				}
-			}
-			else
-			{
-				if (pos.x % 2 == 0)
-				{
-					directions = evenR;
-				}
-				else
-				{
-					directions = oddR;
-				}
-			}
-			List<Vector2Int> result = new();
-			foreach (var dir in directions)
-			{
-				var neighbor = pos + dir;
-				if (neighbor.x >= 0 && neighbor.y >= 0 && neighbor.x < GridSize.x && neighbor.y < GridSize.y)
-					result.Add(neighbor);
-			}
-			return result;
+			return hexGridSystem.GetNeighbors(pos);
 		}
-
-		public int GetHeuristic(Vector2Int a, Vector2Int b)
+		public override int GetHeuristic(Vector2Int a, Vector2Int b)
 		{
 			Vector3Int ac = OffsetToCube(a);
 			Vector3Int bc = OffsetToCube(b);
 			return Mathf.Max(Mathf.Abs(ac.x - bc.x), Mathf.Abs(ac.y - bc.y), Mathf.Abs(ac.z - bc.z)) * cost;
 		}
 
-		public int GetMoveCost(Vector2Int from, Vector2Int to) => cost;
+		public override int GetMoveCost(Vector2Int from, Vector2Int to) => cost;
 
-		public bool IsWalkable(Vector2Int pos, PathfindingCullingMask mask = null) => NavmeshData.IsWalkable(pos, mask);
+		public override bool IsWalkable(Vector2Int pos, PathfindingCullingMask mask = null) => NavmeshData.IsWalkable(pos, mask);
 		private Vector3Int OffsetToCube(Vector2Int offset)
 		{
 			int x = offset.x - (offset.y - (offset.y & 1)) / 2;
@@ -193,37 +134,25 @@ namespace DT.GridSystem.Pathfinding
 			return new Vector3Int(x, y, z);
 		}
 	}
-	public class RectGridPathfinding : IPathfindingGrid
+	public class RectGridPathfinding<T> : AStarPathfinding
 	{
-		private readonly NavmeshData navmesh;
+		private readonly RectGridSystem<T> rectGridSystem;
 		private readonly bool allowDiagonals;
 		private readonly int straightCost, diagonalCost;
 
-		public RectGridPathfinding(NavmeshData navmesh, bool allowDiagonals, int straightCost = 10, int diagonalCost = 14)
+		public RectGridPathfinding(RectGridSystem<T> rectGridSystem,NavmeshData navmesh, bool allowDiagonals, int straightCost = 10, int diagonalCost = 14)
 		{
-			this.navmesh = navmesh;
+			this.rectGridSystem = rectGridSystem;
+			this.NavmeshData = navmesh;
 			this.allowDiagonals = allowDiagonals;
 			this.straightCost = straightCost;
 			this.diagonalCost = diagonalCost;
 		}
-
-		public List<Vector2Int> GetNeighbors(Vector2Int pos)
+		public override List<Vector2Int> GetNeighbors(Vector2Int pos)
 		{
-			Vector2Int[] directions = allowDiagonals ?
-				new Vector2Int[] { new(-1, 0), new(1, 0), new(0, -1), new(0, 1), new(-1, -1), new(-1, 1), new(1, -1), new(1, 1) } :
-				new Vector2Int[] { new(-1, 0), new(1, 0), new(0, -1), new(0, 1) };
-
-			List<Vector2Int> result = new();
-			foreach (var dir in directions)
-			{
-				var neighbor = pos + dir;
-				if (neighbor.x >= 0 && neighbor.y >= 0 && neighbor.x < navmesh.gridSize.x && neighbor.y < navmesh.gridSize.y)
-					result.Add(neighbor);
-			}
-			return result;
+			return rectGridSystem.GetNeighbors(pos,allowDiagonals);
 		}
-
-		public int GetHeuristic(Vector2Int from, Vector2Int to)
+		public override int GetHeuristic(Vector2Int from, Vector2Int to)
 		{
 			int dx = Mathf.Abs(from.x - to.x);
 			int dy = Mathf.Abs(from.y - to.y);
@@ -233,15 +162,15 @@ namespace DT.GridSystem.Pathfinding
 				return (dx + dy) * straightCost;
 		}
 
-		public int GetMoveCost(Vector2Int from, Vector2Int to)
+		public override int GetMoveCost(Vector2Int from, Vector2Int to)
 		{
 			int dx = Mathf.Abs(from.x - to.x);
 			int dy = Mathf.Abs(from.y - to.y);
 			return (dx == 1 && dy == 1) ? diagonalCost : straightCost;
 		}
 
-		public bool IsWalkable(Vector2Int pos, PathfindingCullingMask mask = null) => navmesh.IsWalkable(pos, mask);
-		public Vector2Int GridSize => navmesh.gridSize;
+		public override bool IsWalkable(Vector2Int pos, PathfindingCullingMask mask = null) => NavmeshData.IsWalkable(pos, mask);
+		public override Vector2Int GridSize => NavmeshData.gridSize;
 	}
 
 }

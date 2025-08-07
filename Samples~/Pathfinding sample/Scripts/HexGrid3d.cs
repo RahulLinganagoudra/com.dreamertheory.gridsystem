@@ -15,6 +15,7 @@ namespace DT.GridSystem.Pathfinding.Samples
 		[SerializeField] NavmeshData NavmeshData;
 		[SerializeField] int cost = 10; // Cost for moving to adjacent hexes, can be adjusted as needed
 		Camera Camera;
+
 		void Start()
 		{
 			if (NavmeshData == null)
@@ -22,7 +23,7 @@ namespace DT.GridSystem.Pathfinding.Samples
 				NavmeshData = ScriptableObject.CreateInstance<NavmeshData>();
 			}
 
-			pathfinding = new AStarPathfinding(new HexGrid(GridSize, 1, NavmeshData));
+			pathfinding = new HexGrid<GameObject>(this, 1, NavmeshData);
 			NavmeshData.BakeNavmesh(this);
 
 			pathfinderAgent.Initialize(this, pathfinding);

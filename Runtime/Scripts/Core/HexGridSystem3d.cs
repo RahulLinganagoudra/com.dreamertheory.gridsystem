@@ -102,7 +102,7 @@ namespace DT.GridSystem
 		/// and the parity (even/odd) of the relevant coordinate, ensuring accurate neighbor calculation for both
 		/// flat-topped and pointy-topped hex layouts.
 		/// </remarks>
-		public List<Vector2Int> GetNeighbors(Vector2Int pos)
+		public override List<Vector2Int> GetNeighbors(Vector2Int pos)
 		{
 			Vector2Int[] directions;
 			if (hexOrientation == HexOrientation.PointyTop)
