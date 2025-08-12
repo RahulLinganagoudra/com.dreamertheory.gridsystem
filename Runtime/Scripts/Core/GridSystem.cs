@@ -19,9 +19,9 @@ namespace DT.GridSystem
 		[SerializeField] protected bool drawGizmos = true;
 		[SerializeField] protected bool showGridIndex = false;
 		/// <summary>
-		/// The 2D array storing grid objects.
+		/// The 1D array storing grid objects.
 		/// </summary>
-		protected TGridObject[,] gridArray;
+		[SerializeField] protected TGridObject[] gridArray;
 
 		/// <summary>
 		/// Event invoked whenever the grid is updated.
@@ -43,14 +43,41 @@ namespace DT.GridSystem
 		/// </summary>
 		protected virtual void Awake()
 		{
-			gridArray = new TGridObject[gridSize.x, gridSize.y];
-			for (int x = 0; x < gridSize.x; x++)
+			int size = GridSize.x * GridSize.y;
+
+			gridArray = new TGridObject[size];
+			for (int x = 0; x < GridSize.x; x++)
 			{
-				for (int y = 0; y < gridSize.y; y++)
+				for (int y = 0; y < GridSize.y; y++)
 				{
-					gridArray[x, y] = CreateGridObject(this, x, y);
+					int index = ToIndex(x, y);
+					gridArray[index] = CreateGridObject(this, x, y);
 				}
 			}
+		}
+
+
+		/// <summary>
+		/// Converts 2D grid coordinates to a flat 1D index (row-major order).
+		/// </summary>
+		/// <param name="x">X coordinate (row)</param>
+		/// <param name="y">Y coordinate (column)</param>
+		/// <returns>The 1D index</returns>
+		public int ToIndex(int x, int y)
+		{
+			return x * GridSize.y + y;
+		}
+
+		/// <summary>
+		/// Converts a flat 1D index to 2D grid coordinates (row-major order).
+		/// </summary>
+		/// <param name="index">The 1D index</param>
+		/// <param name="x">Output X coordinate (row)</param>
+		/// <param name="y">Output Y coordinate (column)</param>
+		public void FromIndex(int index, out int x, out int y)
+		{
+			x = index / GridSize.y;
+			y = index % GridSize.y;
 		}
 
 		/// <summary>
@@ -62,7 +89,8 @@ namespace DT.GridSystem
 		{
 			gridSize = size;
 			CellSize = cellsize;
-			gridArray = new TGridObject[gridSize.x, gridSize.y];
+
+			gridArray = new TGridObject[GridSize.x * GridSize.y];
 		}
 
 		/// <summary>
@@ -80,12 +108,12 @@ namespace DT.GridSystem
 		/// <summary>
 		/// Returns the number of rows in the grid.
 		/// </summary>
-		public int GetRowCount() => gridArray.GetLength(0);
+		public int GetRowCount() => GridSize.x;
 
 		/// <summary>
 		/// Returns the number of columns in the grid.
 		/// </summary>
-		public int GetColumnCount() => gridArray.GetLength(1);
+		public int GetColumnCount() => GridSize.y;
 
 		/// <summary>
 		/// Adds or replaces a grid object at the specified coordinates.
@@ -96,9 +124,10 @@ namespace DT.GridSystem
 		/// <param name="snapToGrid">If true, adjusts object to snap to grid (not implemented here).</param>
 		public virtual void AddGridObject(int x, int y, TGridObject value, bool snapToGrid = false)
 		{
-			if (x >= 0 && y >= 0 && x < gridSize.x && y < gridSize.y)
+			if (x >= 0 && y >= 0 && x < GridSize.x && y < GridSize.y)
 			{
-				gridArray[x, y] = value;
+				int index = ToIndex(x, y);
+				gridArray[index] = value;
 			}
 			OnGridUpdated?.Invoke();
 		}
@@ -108,10 +137,12 @@ namespace DT.GridSystem
 		/// </summary>
 		public virtual TGridObject RemoveGridObject(int x, int y)
 		{
-			if (x >= 0 && y >= 0 && x < gridSize.x && y < gridSize.y)
+			if (x >= 0 && y >= 0 && x < GridSize.x && y < GridSize.y)
 			{
-				TGridObject removedObject = gridArray[x, y];
-				gridArray[x, y] = default;
+				int index = ToIndex(x, y);
+
+				TGridObject removedObject = gridArray[index];
+				gridArray[index] = default;
 				OnGridUpdated?.Invoke();
 				return removedObject;
 			}
@@ -123,9 +154,10 @@ namespace DT.GridSystem
 		/// </summary>
 		public virtual TGridObject GetGridObject(int x, int y)
 		{
-			if (x >= 0 && y >= 0 && x < gridSize.x && y < gridSize.y)
+			if (x >= 0 && y >= 0 && x < GridSize.x && y < GridSize.y)
 			{
-				return gridArray[x, y];
+				int index = ToIndex(x, y);
+				return gridArray[index];
 			}
 			return default;
 		}
@@ -213,16 +245,17 @@ namespace DT.GridSystem
 #if UNITY_EDITOR
 			if (!drawGizmos) return;
 
-			gridArray ??= new TGridObject[gridSize.x, gridSize.y];
+			int expectedSize = GridSize.x * GridSize.y;
+			gridArray ??= new TGridObject[expectedSize];
 
-			if (gridArray.GetLength(0) != gridSize.x || gridArray.GetLength(1) != gridSize.y)
+			if (gridArray.Length != expectedSize)
 			{
-				gridArray = new TGridObject[gridSize.x, gridSize.y];
+				gridArray = new TGridObject[expectedSize];
 			}
 
-			for (int x = 0; x < gridSize.x; x++)
+			for (int x = 0; x < GridSize.x; x++)
 			{
-				for (int y = 0; y < gridSize.y; y++)
+				for (int y = 0; y < GridSize.y; y++)
 				{
 					Vector3 start = GetWorldPosition(x, y, false);
 					Vector3 mid = GetWorldPosition(x, y, true);
@@ -247,7 +280,8 @@ namespace DT.GridSystem
 			return GetWorldPosition(vector2Int.x, vector2Int.y, true);
 		}
 	}
-	public abstract class RectGridSystem<T> : GridSystem<T> {
+	public abstract class RectGridSystem<T> : GridSystem<T>
+	{
 
 		private static readonly Vector2Int[] directionsWithNeighbours = new Vector2Int[]
 		{
@@ -302,6 +336,5 @@ namespace DT.GridSystem
 			}
 			return result;
 		}
-
 	}
 }

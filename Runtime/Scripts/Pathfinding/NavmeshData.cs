@@ -10,7 +10,6 @@ namespace DT.GridSystem.Pathfinding
 	[CreateAssetMenu(fileName = "NavmeshData", menuName = "Pathfinding/NavmeshData")]
 	public class NavmeshData : ScriptableObject
 	{
-
 		public class NodeCache
 		{
 			public NavMeshArea area;

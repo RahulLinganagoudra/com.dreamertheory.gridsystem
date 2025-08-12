@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -7,7 +8,7 @@ using UnityEditor;
 namespace DT.GridSystem.Ruletile
 {
 	[ExecuteAlways]
-	public class RuleTileManger : GridSystem3D<GameObject>
+	public class RuleTileManager : GridSystem3D<GameObject>
 	{
 		[System.Serializable]
 		public struct PlacedTile
@@ -16,42 +17,41 @@ namespace DT.GridSystem.Ruletile
 			public GameObject tile;
 		}
 
-		private Transform container;
 		[SerializeField] protected RuleTile ruleTile;
-
-		// Only keep this runtime reference for generated tiles
-		protected Dictionary<Vector2Int, GameObject> placedTiles = new();
-
-		[SerializeField]
-		protected List<PlacedTile> placedTileList = new List<PlacedTile>();
+		[SerializeField] protected List<PlacedTile> placedTileList = new();
 
 #if UNITY_EDITOR
-		protected HashSet<Vector2Int> selectedCells = new();
-		[SerializeField] private Color selectedColor = new(1f, 0.6f, 0.2f, 0.4f); // orange highlight
-		protected bool enableEditing;
-		private Vector2 boxSelectStart;
-		private Vector2 boxSelectEnd;
-		private bool isBoxSelecting = false;
+		[Header("Editor - Selection")]
+		[SerializeField] private Color selectedColor = new(1f, 0.6f, 0.2f, 0.4f);
 
+		protected readonly HashSet<Vector2Int> selectedCells = new();
+		private Transform container;
+		private bool enableEditing = false;
+		private bool isBoxSelecting = false;
+		private Vector2 boxSelectStart, boxSelectEnd;
+#endif
+
+		// Runtime dictionary - rebuilt from serialized list
+		protected readonly Dictionary<Vector2Int, GameObject> placedTiles = new();
+
+#if UNITY_EDITOR
 		public Transform Container
 		{
-			get
-			{
-				if (container == null)
-				{
-					return transform;
-				}
-				return container;
-			}
+			get => container == null ? transform : container;
 			set => container = value;
 		}
+#else
+        public Transform Container => transform;
 #endif
 
 		protected virtual void OnEnable()
 		{
 #if UNITY_EDITOR
 			if (!Application.isPlaying)
+			{
 				SceneView.duringSceneGui += OnSceneGUI;
+				Undo.undoRedoPerformed += OnUndoRedoPerformed;
+			}
 #endif
 			RebuildDictionary();
 		}
@@ -60,329 +60,145 @@ namespace DT.GridSystem.Ruletile
 		{
 #if UNITY_EDITOR
 			SceneView.duringSceneGui -= OnSceneGUI;
+			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
 #endif
 		}
 
 #if UNITY_EDITOR
-		protected virtual void OnSceneGUI(SceneView sceneView)
+		private void OnSceneGUI(SceneView sceneView)
 		{
-			Handles.color = Color.gray;
-
-			for (int x = 0; x < gridSize.x; x++)
-			{
-				for (int y = 0; y < gridSize.y; y++)
-				{
-					Vector3 center = GetWorldPosition(x, y, true);
-
-					if (selectedCells.Contains(new Vector2Int(x, y)))
-					{
-						Handles.DrawSolidRectangleWithOutline(new[]
-						{
-							center + new Vector3(-CellSize/2, 0,-CellSize/2),
-							center + new Vector3(-CellSize/2, 0, CellSize/2),
-							center + new Vector3( CellSize/2, 0, CellSize/2),
-							center + new Vector3( CellSize/2, 0,-CellSize/2)
-						}, selectedColor, Color.white);
-					}
-				}
-			}
-
-			// Handle both box selection and single clicks
-			HandleBoxSelection(sceneView);
-
-			// Only handle single clicks if we're not box selecting
-			if (!isBoxSelecting)
-			{
-				HandleClick(sceneView);
-			}
+			DrawGridSelection();
+			HandleBoxSelection();
+			if (!isBoxSelecting) HandleClick();
 		}
 
-		protected void HandleBoxSelection(SceneView sceneView)
+		private void DrawGridSelection()
 		{
-			Event e = Event.current;
-
-			if (!enableEditing) return;
-
-			// Start box selection with Shift+Click
-			if (e.type == EventType.MouseDown && e.button == 0 && e.shift && !e.alt)
-			{
-				// Record selection state for undo
-				Undo.RecordObject(this, "Box Select Tiles");
-
-				isBoxSelecting = true;
-				boxSelectStart = e.mousePosition;
-				boxSelectEnd = e.mousePosition;
-
-				// Clear selection if not holding Ctrl/Cmd (for additive selection)
-				if (!e.control && !e.command)
-				{
-					selectedCells.Clear();
-				}
-
-				e.Use();
-			}
-			else if (e.type == EventType.MouseDrag && isBoxSelecting)
-			{
-				boxSelectEnd = e.mousePosition;
-				e.Use();
-				SceneView.RepaintAll();
-			}
-			else if (e.type == EventType.MouseUp && isBoxSelecting)
-			{
-				isBoxSelecting = false;
-				boxSelectEnd = e.mousePosition;
-
-				SelectCellsInBox(boxSelectStart, boxSelectEnd, sceneView.camera);
-
-				EditorUtility.SetDirty(this);
-				e.Use();
-				SceneView.RepaintAll();
-			}
-
-			// Draw the selection box
-			if (isBoxSelecting)
-			{
-				Handles.BeginGUI();
-				var rect = new Rect(
-					Mathf.Min(boxSelectStart.x, boxSelectEnd.x),
-					Mathf.Min(boxSelectStart.y, boxSelectEnd.y),
-					Mathf.Abs(boxSelectStart.x - boxSelectEnd.x),
-					Mathf.Abs(boxSelectStart.y - boxSelectEnd.y)
-				);
-				EditorGUI.DrawRect(rect, new Color(1f, 0.8f, 0.2f, 0.2f));
-				Handles.EndGUI();
-			}
-		}
-
-		protected virtual void HandleClick(SceneView sceneView)
-		{
-			if (!enableEditing) return;
-			Event e = Event.current;
-
-			// Only handle single clicks (not when shift is held for box select)
-			if (e.type == EventType.MouseDown && e.button == 0 && !e.alt && !e.shift)
-			{
-				Ray worldRay = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-				Plane plane = new Plane(Vector3.up, transform.position);
-
-				if (plane.Raycast(worldRay, out float distance))
-				{
-					Vector3 hitPoint = worldRay.GetPoint(distance);
-					GetGridPosition(hitPoint, out int x, out int y);
-
-					if (x >= 0 && x < gridSize.x && y >= 0 && y < gridSize.y)
-					{
-						Vector2Int cell = new Vector2Int(x, y);
-
-						// Record selection state for undo
-						Undo.RecordObject(this, "Select Tile");
-
-						if (Event.current.control || Event.current.command)
-						{
-							// Toggle selection with Ctrl/Cmd
-							if (selectedCells.Contains(cell))
-								selectedCells.Remove(cell);
-							else
-								selectedCells.Add(cell);
-						}
-						else
-						{
-							// Replace selection
-							selectedCells.Clear();
-							selectedCells.Add(cell);
-						}
-
-						EditorUtility.SetDirty(this);
-						e.Use();
-						SceneView.RepaintAll();
-					}
-				}
-			}
-		}
-
-		private void SyncPlacedTileList()
-		{
-			placedTileList = new List<PlacedTile>();
-			foreach (var kvp in placedTiles)
-			{
-				placedTileList.Add(new PlacedTile { position = kvp.Key, tile = kvp.Value });
-			}
-		}
-
-		public virtual void GenerateGrid()
-		{
-			if (Container == null)
-			{
-				Debug.LogWarning("No container assigned.");
-				return;
-			}
-
 			if (selectedCells.Count == 0) return;
 
-			// Group operations for better undo experience
-			Undo.IncrementCurrentGroup();
-			int undoGroupIndex = Undo.GetCurrentGroup();
-			Undo.SetCurrentGroupName("Generate Rule Tiles");
+			Handles.color = Color.gray;
+			float halfCell = CellSize * 0.5f;
 
-			// Record manager state
-			Undo.RecordObject(this, "Generate Rule Tiles");
-
-			HashSet<Vector2Int> toUpdate = new HashSet<Vector2Int>();
-
-			// Collect all selected + their neighbors
 			foreach (var cell in selectedCells)
 			{
-				toUpdate.Add(cell);
-				toUpdate.Add(new Vector2Int(cell.x + 1, cell.y));
-				toUpdate.Add(new Vector2Int(cell.x - 1, cell.y));
-				toUpdate.Add(new Vector2Int(cell.x, cell.y + 1));
-				toUpdate.Add(new Vector2Int(cell.x, cell.y - 1));
-				toUpdate.Add(new Vector2Int(cell.x - 1, cell.y - 1));
-				toUpdate.Add(new Vector2Int(cell.x - 1, cell.y + 1));
-				toUpdate.Add(new Vector2Int(cell.x + 1, cell.y - 1));
-				toUpdate.Add(new Vector2Int(cell.x + 1, cell.y + 1));
+				Vector3 center = GetWorldPosition(cell.x, cell.y, true);
+				Vector3[] corners = {
+					center + new Vector3(-halfCell, 0, -halfCell),
+					center + new Vector3(-halfCell, 0,  halfCell),
+					center + new Vector3( halfCell, 0,  halfCell),
+					center + new Vector3( halfCell, 0, -halfCell)
+				};
+				Handles.DrawSolidRectangleWithOutline(corners, selectedColor, Color.white);
 			}
-
-			foreach (var pos in toUpdate)
-			{
-				if (pos.x < 0 || pos.x >= gridSize.x || pos.y < 0 || pos.y >= gridSize.y)
-					continue;
-
-				CreateOrUpdateTile(pos.x, pos.y);
-			}
-
-			SyncPlacedTileList();
-			EditorUtility.SetDirty(this);
-
-			// Collapse undo operations into one step
-			Undo.CollapseUndoOperations(undoGroupIndex);
 		}
 
-		public virtual void DeleteSelectedTiles()
+		private void HandleBoxSelection()
 		{
-			if (selectedCells.Count == 0) return;
+			Event e = Event.current;
+			if (!enableEditing) return;
 
-			// Group operations for better undo experience
-			Undo.IncrementCurrentGroup();
-			int undoGroupIndex = Undo.GetCurrentGroup();
-			Undo.SetCurrentGroupName("Delete Rule Tiles");
-
-			// Record manager state
-			Undo.RecordObject(this, "Delete Rule Tiles");
-
-			HashSet<Vector2Int> neighborsToUpdate = new HashSet<Vector2Int>();
-
-			// Step 1: Collect neighbors BEFORE destroying
-			foreach (var pos in selectedCells)
+			switch (e.type)
 			{
-				neighborsToUpdate.Add(new Vector2Int(pos.x + 1, pos.y));
-				neighborsToUpdate.Add(new Vector2Int(pos.x - 1, pos.y));
-				neighborsToUpdate.Add(new Vector2Int(pos.x, pos.y + 1));
-				neighborsToUpdate.Add(new Vector2Int(pos.x, pos.y - 1));
-				neighborsToUpdate.Add(new Vector2Int(pos.x + 1, pos.y + 1));
-				neighborsToUpdate.Add(new Vector2Int(pos.x + 1, pos.y - 1));
-				neighborsToUpdate.Add(new Vector2Int(pos.x - 1, pos.y + 1));
-				neighborsToUpdate.Add(new Vector2Int(pos.x - 1, pos.y - 1));
+				case EventType.MouseDown when e.button == 0 && e.shift && !e.alt:
+					StartBoxSelection(e);
+					break;
+				case EventType.MouseDrag when isBoxSelecting:
+					UpdateBoxSelection(e);
+					break;
+				case EventType.MouseUp when isBoxSelecting:
+					EndBoxSelection(e);
+					break;
 			}
 
-			// Step 2: Delete selected tiles
-			foreach (var pos in selectedCells)
-			{
-				if (placedTiles.TryGetValue(pos, out var tile))
-				{
-					Undo.DestroyObjectImmediate(tile);
-					placedTiles.Remove(pos);
-				}
-			}
+			if (isBoxSelecting) DrawSelectionBox();
+		}
 
-			selectedCells.Clear();
+		private void StartBoxSelection(Event e)
+		{
+			Undo.RegisterCompleteObjectUndo(this, "Box Select Tiles");
+			isBoxSelecting = true;
+			boxSelectStart = boxSelectEnd = e.mousePosition;
+			if (!e.control && !e.command) selectedCells.Clear();
+			e.Use();
+		}
 
-			// Step 3: Update neighbors
-			foreach (var neighbor in neighborsToUpdate)
-			{
-				if (neighbor.x < 0 || neighbor.x >= gridSize.x || neighbor.y < 0 || neighbor.y >= gridSize.y)
-					continue;
-
-				CreateOrUpdateTile(neighbor.x, neighbor.y);
-			}
-
-			SyncPlacedTileList();
-			EditorUtility.SetDirty(this);
-
-			// Collapse undo operations into one step
-			Undo.CollapseUndoOperations(undoGroupIndex);
+		private void UpdateBoxSelection(Event e)
+		{
+			boxSelectEnd = e.mousePosition;
+			e.Use();
 			SceneView.RepaintAll();
 		}
 
-		private void CreateOrUpdateTile(int x, int y)
+		private void EndBoxSelection(Event e)
 		{
-			Vector2Int pos = new(x, y);
-			bool isActiveTile = selectedCells.Contains(pos);
+			isBoxSelecting = false;
+			boxSelectEnd = e.mousePosition;
+			SelectCellsInBox(boxSelectStart, boxSelectEnd);
+			SetDirtyAndRepaint();
+			e.Use();
+		}
 
-			if (!isActiveTile && !placedTiles.ContainsKey(pos))
-				return;
+		private void DrawSelectionBox()
+		{
+			Handles.BeginGUI();
+			Rect rect = new(
+				Mathf.Min(boxSelectStart.x, boxSelectEnd.x),
+				Mathf.Min(boxSelectStart.y, boxSelectEnd.y),
+				Mathf.Abs(boxSelectStart.x - boxSelectEnd.x),
+				Mathf.Abs(boxSelectStart.y - boxSelectEnd.y)
+			);
+			EditorGUI.DrawRect(rect, new Color(1f, 0.8f, 0.2f, 0.2f));
+			Handles.EndGUI();
+		}
 
-			// Destroy existing tile if present
-			if (placedTiles.TryGetValue(pos, out GameObject existing))
+		private void HandleClick()
+		{
+			if (!enableEditing) return;
+
+			Event e = Event.current;
+			if (e.type != EventType.MouseDown || e.button != 0 || e.alt || e.shift) return;
+
+			if (!GetClickedCell(e.mousePosition, out Vector2Int cell)) return;
+
+			Undo.RegisterCompleteObjectUndo(this, "Select Tile");
+			Undo.FlushUndoRecordObjects(); 
+			if (e.control || e.command)
 			{
-				Undo.DestroyObjectImmediate(existing);
-				placedTiles.Remove(pos);
+				if (!selectedCells.Remove(cell)) selectedCells.Add(cell);
+			}
+			else
+			{
+				selectedCells.Clear();
+				selectedCells.Add(cell);
 			}
 
-			var result = ruleTile.GetPrefabForPosition(x, y, placedTiles, selectedCells);
-			if (result.prefab == null) return;
-
-			GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(result.prefab, Container == null ? transform : Container);
-			Undo.RegisterCreatedObjectUndo(instance, "Create Rule Tile");
-
-			instance.transform.position = GetWorldPosition(x, y, true);
-			instance.transform.rotation = result.rotation;
-
-			placedTiles[pos] = instance;
+			SetDirtyAndRepaint();
+			e.Use();
 		}
 
-		public virtual void ClearSelection()
+		private bool GetClickedCell(Vector2 mousePos, out Vector2Int cell)
 		{
-			Undo.RecordObject(this, "Clear Selection");
-			selectedCells.Clear();
-			EditorUtility.SetDirty(this);
-			SceneView.RepaintAll();
+			cell = default;
+			Ray worldRay = HandleUtility.GUIPointToWorldRay(mousePos);
+			Plane plane = new(Vector3.up, transform.position);
+
+			if (!plane.Raycast(worldRay, out float dist)) return false;
+
+			Vector3 hitPoint = worldRay.GetPoint(dist);
+			GetGridPosition(hitPoint, out int x, out int y);
+
+			if (x < 0 || x >= gridSize.x || y < 0 || y >= gridSize.y) return false;
+
+			cell = new Vector2Int(x, y);
+			return true;
 		}
 
-		public virtual void ToggleEditing()
-		{
-			enableEditing = !enableEditing;
-			if (!enableEditing)
-			{
-				ClearSelection();
-			}
-#if UNITY_EDITOR
-    		UnityEditor.EditorUtility.SetDirty(this);
-#endif
-		}
-
-		public virtual bool IsEditing()
-		{
-			return enableEditing;
-		}
-		public virtual void SelectAllCells()
-		{
-			selectedCells.Clear();
-			for (int x = 0; x < gridSize.x; x++)
-			{
-				for (int y = 0; y < gridSize.y; y++)
-				{
-					selectedCells.Add(new Vector2Int(x, y));
-				}
-			}
-		}
-
-		private void SelectCellsInBox(Vector2 start, Vector2 end, Camera sceneCamera)
+		private void SelectCellsInBox(Vector2 start, Vector2 end)
 		{
 			Vector2 min = Vector2.Min(start, end);
 			Vector2 max = Vector2.Max(start, end);
 
-			// Only select if the box has some minimum size to avoid accidental selections
+			// Minimum drag distance to avoid accidental selections
 			if (Mathf.Abs(max.x - min.x) < 5 || Mathf.Abs(max.y - min.y) < 5) return;
 
 			for (int x = 0; x < gridSize.x; x++)
@@ -390,10 +206,10 @@ namespace DT.GridSystem.Ruletile
 				for (int y = 0; y < gridSize.y; y++)
 				{
 					Vector3 worldPos = GetWorldPosition(x, y, true);
-					Vector2 screenPoint = HandleUtility.WorldToGUIPoint(worldPos);
+					Vector2 screenPos = HandleUtility.WorldToGUIPoint(worldPos);
 
-					if (screenPoint.x >= min.x && screenPoint.x <= max.x &&
-						screenPoint.y >= min.y && screenPoint.y <= max.y)
+					if (screenPos.x >= min.x && screenPos.x <= max.x &&
+						screenPos.y >= min.y && screenPos.y <= max.y)
 					{
 						selectedCells.Add(new Vector2Int(x, y));
 					}
@@ -401,30 +217,237 @@ namespace DT.GridSystem.Ruletile
 			}
 		}
 
+		// Optimized helper for common operations
+		private void SetDirtyAndRepaint()
+		{
+			EditorUtility.SetDirty(this);
+			SceneView.RepaintAll();
+		}
+
+		public void ToggleEditing()
+		{
+			enableEditing = !enableEditing;
+			if (!enableEditing) ClearSelection();
+			EditorUtility.SetDirty(this);
+		}
+
+		public bool IsEditing() => enableEditing;
+
+		public void ClearSelection()
+		{
+			Undo.RegisterCompleteObjectUndo(this, "Clear Selection");
+			selectedCells.Clear();
+			SetDirtyAndRepaint();
+		}
+
+		public void SelectAllCells()
+		{
+			Undo.RegisterCompleteObjectUndo(this, "Select All Cells");
+			selectedCells.Clear();
+
+			for (int x = 0; x < gridSize.x; x++)
+				for (int y = 0; y < gridSize.y; y++)
+					selectedCells.Add(new Vector2Int(x, y));
+
+			SetDirtyAndRepaint();
+		}
+
+		public virtual void GenerateGrid()
+		{
+			if (Container == null || selectedCells.Count == 0) return;
+
+			var undoGroup = BeginUndoGroup("Generate Rule Tiles");
+			Undo.SetCurrentGroupName("Generate Rule Tiles");
+			Undo.FlushUndoRecordObjects();
+			// Get all positions that need updating (selected + neighbors)
+			HashSet<Vector2Int> toUpdate = GetPositionsToUpdate(selectedCells);
+
+			foreach (var pos in toUpdate)
+			{
+				if (IsValidGridPosition(pos))
+					CreateOrUpdateTile(pos);
+			}
+
+			SyncPlacedTileList();
+			EndUndoGroup(undoGroup);
+		}
+
+		public virtual void DeleteSelectedTiles()
+		{
+			if (selectedCells.Count == 0) return;
+
+			var undoGroup = BeginUndoGroup("Delete Rule Tiles");
+
+			List<Vector2Int> toDelete = new(selectedCells);
+			HashSet<Vector2Int> neighborsToUpdate = GetNeighbors(toDelete);
+
+			// Delete selected tiles
+			foreach (var pos in toDelete)
+			{
+				if (placedTiles.TryGetValue(pos, out GameObject go) && go != null)
+					Undo.DestroyObjectImmediate(go);
+
+				placedTiles.Remove(pos);
+				RemoveFromPlacedTileList(pos);
+			}
+
+			selectedCells.Clear();
+
+			// Update neighbors
+			foreach (var neighbor in neighborsToUpdate)
+			{
+				if (IsValidGridPosition(neighbor))
+					CreateOrUpdateTile(neighbor);
+			}
+
+			EndUndoGroup(undoGroup);
+		}
+
+		private int BeginUndoGroup(string name)
+		{
+			Undo.IncrementCurrentGroup();
+			int group = Undo.GetCurrentGroup();
+			Undo.SetCurrentGroupName(name);
+			Undo.RegisterCompleteObjectUndo(this, name);
+			return group;
+		}	
+
+		private void EndUndoGroup(int group)
+		{
+			Undo.FlushUndoRecordObjects();
+			EditorUtility.SetDirty(this);
+			Undo.CollapseUndoOperations(group);
+			SceneView.RepaintAll();
+		}
+
+		private HashSet<Vector2Int> GetPositionsToUpdate(IEnumerable<Vector2Int> positions)
+		{
+			HashSet<Vector2Int> result = new();
+			foreach (var pos in positions)
+			{
+				// Add position and all 8 neighbors
+				for (int dx = -1; dx <= 1; dx++)
+					for (int dy = -1; dy <= 1; dy++)
+						result.Add(new Vector2Int(pos.x + dx, pos.y + dy));
+			}
+			return result;
+		}
+
+		private HashSet<Vector2Int> GetNeighbors(IEnumerable<Vector2Int> positions)
+		{
+			HashSet<Vector2Int> neighbors = new();
+			foreach (var pos in positions)
+			{
+				for (int dx = -1; dx <= 1; dx++)
+					for (int dy = -1; dy <= 1; dy++)
+					{
+						if (dx == 0 && dy == 0) continue;
+						neighbors.Add(new Vector2Int(pos.x + dx, pos.y + dy));
+					}
+			}
+			return neighbors;
+		}
+
+		private bool IsValidGridPosition(Vector2Int pos) =>
+			pos.x >= 0 && pos.x < gridSize.x && pos.y >= 0 && pos.y < gridSize.y;
+
+		protected void RemoveFromPlacedTileList(Vector2Int position)
+		{
+			for (int i = placedTileList.Count - 1; i >= 0; i--)
+			{
+				if (placedTileList[i].position == position)
+				{
+					placedTileList.RemoveAt(i);
+					break;
+				}
+			}
+		}
+
+		private void OnUndoRedoPerformed()
+		{
+			RebuildDictionary();
+			SceneView.RepaintAll();
+		}
 #endif
 
-		protected void RebuildDictionary()
+		private void CreateOrUpdateTile(Vector2Int pos)
+		{
+#if UNITY_EDITOR
+			bool isActiveTile = selectedCells.Contains(pos);
+#else
+            const bool isActiveTile = true;
+#endif
+			if (!isActiveTile && !placedTiles.ContainsKey(pos)) return;
+
+			// Remove existing tile if present
+			if (placedTiles.TryGetValue(pos, out GameObject existing) && existing != null)
+			{
+#if UNITY_EDITOR
+				Undo.DestroyObjectImmediate(existing);
+#else
+                DestroyImmediate(existing);
+#endif
+				placedTiles.Remove(pos);
+				RemoveFromPlacedTileList(pos);
+			}
+
+			// Get new tile from rule system
+			var result = ruleTile.GetPrefabForPosition(pos.x, pos.y, placedTiles,
+#if UNITY_EDITOR
+				selectedCells
+#else
+                null
+#endif
+			);
+
+			if (result.prefab == null) return;
+
+			// Create new tile
+#if UNITY_EDITOR
+			GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(result.prefab, Container);
+			Undo.RegisterCreatedObjectUndo(instance, "Create Rule Tile");
+#else
+			GameObject instance = GameObject.Instantiate(result.prefab, Container);
+#endif
+
+			instance.transform.position = GetWorldPosition(pos.x, pos.y, true);
+			instance.transform.rotation = result.rotation;
+
+			placedTiles[pos] = instance;
+			placedTileList.Add(new PlacedTile { position = pos, tile = instance });
+		}
+
+		private void SyncPlacedTileList()
+		{
+			placedTileList.Clear();
+			foreach (var kvp in placedTiles)
+			{
+				if (kvp.Value != null)
+					placedTileList.Add(new PlacedTile { position = kvp.Key, tile = kvp.Value });
+			}
+		}
+
+		public void RebuildDictionary()
 		{
 			placedTiles.Clear();
-			foreach (var pt in placedTileList)
+			for (int i = placedTileList.Count - 1; i >= 0; i--)
 			{
-				if (pt.tile != null)
+				PlacedTile pt = placedTileList[i];
+				if (pt.tile == null)
+					placedTileList.RemoveAt(i);
+				else
 					placedTiles[pt.position] = pt.tile;
 			}
 		}
 
-		// RUNTIME: Only keep reference for generated tiles
 		public virtual void DeleteAllChildren()
 		{
 #if UNITY_EDITOR
 			if (!Application.isPlaying)
 			{
-				Undo.RecordObject(this, "Delete All Tiles");
+				Undo.RegisterCompleteObjectUndo(this, "Delete All Tiles");
 				foreach (var go in placedTiles.Values)
-				{
-					if (go != null)
-						Undo.DestroyObjectImmediate(go);
-				}
+					if (go != null) Undo.DestroyObjectImmediate(go);
 				placedTileList.Clear();
 				EditorUtility.SetDirty(this);
 			}
@@ -432,15 +455,11 @@ namespace DT.GridSystem.Ruletile
 #endif
 			{
 				foreach (var go in placedTiles.Values)
-				{
-					if (go != null)
-						DestroyImmediate(go);
-				}
+					if (go != null) DestroyImmediate(go);
 #if UNITY_EDITOR
 				placedTileList.Clear();
 #endif
 			}
-
 			placedTiles.Clear();
 		}
 	}

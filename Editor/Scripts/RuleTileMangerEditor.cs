@@ -3,51 +3,51 @@ using UnityEditor;
 using UnityEngine;
 namespace DT.GridSystem.Ruletile
 {
-	[CustomEditor(typeof(RuleTileManger))]
+	[CustomEditor(typeof(RuleTileManager))]
 	public class RuleTileMangerEditor : Editor
 	{
-		static RuleTileManger Target;
+		static RuleTileManager Target;
 
 		private void Awake()
 		{
 			if (Target == null)
 			{
-				Target = (RuleTileManger)target;
+				Target = (RuleTileManager)target;
 			}
 		}
 		public override void OnInspectorGUI()
 		{
 			if (Target == null)
 			{
-				Target = (RuleTileManger)target;
+				Target = (RuleTileManager)target;
 			}
 			DrawDefaultInspector();
 
-			if (GUILayout.Button(((RuleTileManger)target).IsEditing() ? "Disable Editing" : "Enable editing"))
+			if (GUILayout.Button(((RuleTileManager)target).IsEditing() ? "Disable Editing" : "Enable editing"))
 			{
-				var generator = (RuleTileManger)target;
+				var generator = (RuleTileManager)target;
 				generator.ToggleEditing();
 			}
 			if (GUILayout.Button("Generate Grid"))
 			{
-				var generator = (RuleTileManger)target;
+				var generator = (RuleTileManager)target;
 				generator.GenerateGrid();
 			}
 
 			if (GUILayout.Button("Clear Selection"))
 			{
-				var generator = (RuleTileManger)target;
+				var generator = (RuleTileManager)target;
 				generator.ClearSelection();
 			}
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Delete Selected"))
 			{
-				var generator = (RuleTileManger)target;
+				var generator = (RuleTileManager)target;
 				generator.DeleteSelectedTiles();
 			}
 			if (GUILayout.Button("Destroy All"))
 			{
-				var generator = (RuleTileManger)target;
+				var generator = (RuleTileManager)target;
 				generator.DeleteAllChildren();
 			}
 
@@ -94,7 +94,7 @@ namespace DT.GridSystem.Ruletile
 			generator.ToggleEditing();
 			EditorUtility.SetDirty(generator);
 		}
-		[MenuItem("DT/Select all tiles while editing &a")]
+		[MenuItem("DT/Select all tiles while editing %&a")]
 		public static void SelectAll()
 		{
 			if (Target == null) return;

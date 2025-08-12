@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 
 namespace DT.GridSystem
@@ -75,15 +74,15 @@ namespace DT.GridSystem
 					float width = size;
 					float height = sqrt3Over2 * size;
 					float offsetX = (y % 2 == 0) ? 0 : width * 0.5f;
-					float xPos = x * width + offsetX - gridSize.x * width * 0.5f;
-					float yPos = y * height - gridSize.y * height * 0.5f;
+					float xPos = x * width + offsetX - GridSize.x * width * 0.5f;
+					float yPos = y * height - GridSize.y * height * 0.5f;
 					return new Vector3(xPos, 0, yPos) + transform.position + new Vector3(CellSize, 0, CellSize) * 0.5f;
 
 				case HexOrientation.FlatTop:
 					float heightP = size;
 					float widthP = sqrt3Over2 * size;
 					float offsetY = (x % 2 == 0) ? 0 : heightP * 0.5f;
-					return new Vector3(x * widthP - gridSize.x * widthP * 0.5f, 0, y * heightP + offsetY - gridSize.y * heightP * 0.5f) + transform.position + new Vector3(CellSize, 0, CellSize) * 0.5f;
+					return new Vector3(x * widthP - GridSize.x * widthP * 0.5f, 0, y * heightP + offsetY - GridSize.y * heightP * 0.5f) + transform.position + new Vector3(CellSize, 0, CellSize) * 0.5f;
 
 				default:
 					return Vector3.zero;
@@ -157,30 +156,30 @@ namespace DT.GridSystem
 					float width = size;
 					float height = sqrt3Over2 * size;
 
-					float q = (local.x + gridSize.x * width * 0.5f) / width;
-					float r = (local.z + gridSize.y * height * 0.5f) / height;
+					float q = (local.x + GridSize.x * width * 0.5f) / width;
+					float r = (local.z + GridSize.y * height * 0.5f) / height;
 
 					int row = Mathf.RoundToInt(r);
 					float offsetX = (row % 2 == 0) ? 0 : 0.5f;
 					int col = Mathf.RoundToInt(q - offsetX);
 
-					x = Mathf.Clamp(col, 0, gridSize.x - 1);
-					y = Mathf.Clamp(row, 0, gridSize.y - 1);
+					x = Mathf.Clamp(col, 0, GridSize.x - 1);
+					y = Mathf.Clamp(row, 0, GridSize.y - 1);
 					break;
 
 				case HexOrientation.FlatTop:
 					float heightP = size;
 					float widthP = sqrt3Over2 * size;
 
-					float colF = (local.x + gridSize.x * widthP * 0.5f) / widthP;
-					float rowF = (local.z + gridSize.y * heightP * 0.5f) / heightP;
+					float colF = (local.x + GridSize.x * widthP * 0.5f) / widthP;
+					float rowF = (local.z + GridSize.y * heightP * 0.5f) / heightP;
 
 					int colP = Mathf.RoundToInt(colF);
 					float offsetY = (colP % 2 == 0) ? 0 : 0.5f;
 					int rowP = Mathf.RoundToInt(rowF - offsetY);
 
-					x = Mathf.Clamp(colP, 0, gridSize.x - 1);
-					y = Mathf.Clamp(rowP, 0, gridSize.y - 1);
+					x = Mathf.Clamp(colP, 0, GridSize.x - 1);
+					y = Mathf.Clamp(rowP, 0, GridSize.y - 1);
 					break;
 
 				default:
@@ -199,9 +198,9 @@ namespace DT.GridSystem
 			sqrt3 = Mathf.Sqrt(3f);
 			sqrt3Over2 = sqrt3 / 2f;
 
-			for (int i = 0; i < gridSize.x; i++)
+			for (int i = 0; i < GridSize.x; i++)
 			{
-				for (int j = 0; j < gridSize.y; j++)
+				for (int j = 0; j < GridSize.y; j++)
 				{
 					Vector3 position = GetWorldPosition(i, j, true);
 					//Gizmos.color = Color.green;
