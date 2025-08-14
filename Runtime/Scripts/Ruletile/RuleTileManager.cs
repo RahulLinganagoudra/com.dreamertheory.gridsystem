@@ -22,10 +22,11 @@ namespace DT.GridSystem.Ruletile
 
 #if UNITY_EDITOR
 		[Header("Editor - Selection")]
+		[SerializeField]private Transform container;
+		
 		[SerializeField] private Color selectedColor = new(1f, 0.6f, 0.2f, 0.4f);
 
 		protected readonly HashSet<Vector2Int> selectedCells = new();
-		private Transform container;
 		private bool enableEditing = false;
 		private bool isBoxSelecting = false;
 		private Vector2 boxSelectStart, boxSelectEnd;

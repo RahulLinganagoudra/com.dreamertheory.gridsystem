@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 namespace DT.GridSystem.Ruletile
 {
-	[CustomEditor(typeof(RuleTileManager))]
+	[CustomEditor(typeof(RuleTileManager),true)]
 	public class RuleTileMangerEditor : Editor
 	{
 		static RuleTileManager Target;
