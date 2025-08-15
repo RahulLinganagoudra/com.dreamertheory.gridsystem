@@ -2,23 +2,21 @@ using UnityEngine;
 
 namespace DT.GridSystem.Pathfinding
 {
-	public class PathfinderAgent<TGridObject> : MonoBehaviour
+	public class PathfinderAgent : MonoBehaviour
 	{
-		private GridSystem<TGridObject> grid;
+		private GridSystem<GameObject> grid;
 		private AStarPathfinding pathfinding;
 		private Path path;
-		[SerializeField] PathfindingCullingMask cullingMask;
+		[SerializeField] PathfindingLayer pathfindingLayer;
 		private int pathIndex;
 		public float moveSpeed = 5f;
+		[SerializeField] private Vector2Int agentSize = new Vector2Int(1, 1);
 
-#if UNITY_EDITOR
-	[SerializeField]	bool showPath = false;
-#endif
+		public PathfindingLayer Layer => pathfindingLayer;
+		public Vector2Int AgentSize { get => agentSize; set => agentSize = value; }
+		public PathfindingCullingMask CullingMask => pathfindingLayer.GetMask();
 
-
-		public PathfindingCullingMask CullingMask { get => cullingMask; set => cullingMask = value; }
-
-		public void Initialize(GridSystem<TGridObject> grid, AStarPathfinding pathfinding)
+		public void Initialize(GridSystem<GameObject> grid, AStarPathfinding pathfinding)
 		{
 			this.grid = grid;
 			this.pathfinding = pathfinding;
@@ -30,19 +28,32 @@ namespace DT.GridSystem.Pathfinding
 			FollowPath(path);
 			return path != null && path.hasPath;
 		}
-		public Path GetPath(Vector3 target, PathfindingCullingMask cullingMask = null)
+
+		// Static pathfinding methods (unchanged)
+		public Path GetPath(Vector3 target) => GetPath(target, CullingMask);
+
+		public Path GetPath(Vector3 target, PathfindingCullingMask cullingMask)
 		{
 			grid.GetGridPosition(transform.position, out int x, out int y);
 			grid.GetGridPosition(target, out int X, out int Y);
 
-			return pathfinding.FindPath(new(x, y), new(X, Y), cullingMask);
+			if (agentSize.x > 1 || agentSize.y > 1)
+				return pathfinding.FindPathMultiCell(new(x, y), new(X, Y), agentSize, cullingMask);
+			else
+				return pathfinding.FindPath(new(x, y), new(X, Y), cullingMask);
 		}
-		public Path GetPath(Vector3 startPoint, Vector3 endPoint, PathfindingCullingMask cullingMask = null)
+
+		private bool PathsAreEqual(Path path1, Path path2)
 		{
-			grid.GetGridPosition(startPoint, out int x, out int y);
-			grid.GetGridPosition(endPoint, out int X, out int Y);
-			return pathfinding.FindPath(new(x, y), new(X, Y), cullingMask);
+			if (path1.wayPoints.Count != path2.wayPoints.Count) return false;
+			for (int i = 0; i < path1.wayPoints.Count; i++)
+			{
+				if (path1.wayPoints[i] != path2.wayPoints[i]) return false;
+			}
+			return true;
 		}
+
+		// Rest of your existing methods...
 		public void FollowPath(Path path)
 		{
 			if (path != null && path.hasPath)
@@ -52,6 +63,7 @@ namespace DT.GridSystem.Pathfinding
 				StartCoroutine(FollowPath());
 			}
 		}
+
 		private System.Collections.IEnumerator FollowPath()
 		{
 			while (path != null && path.hasPath && pathIndex < path.wayPoints.Count)
@@ -65,6 +77,7 @@ namespace DT.GridSystem.Pathfinding
 				pathIndex++;
 			}
 		}
+
 #if UNITY_EDITOR
 		private void OnDrawGizmos()
 		{
@@ -73,11 +86,9 @@ namespace DT.GridSystem.Pathfinding
 			{
 				var start = path.wayPoints[i - 1];
 				var end = path.wayPoints[i];
-
 				Gizmos.DrawLine(grid.GetWorldPosition(start.x, start.y, true), grid.GetWorldPosition(end.x, end.y, true));
 			}
-		} 
+		}
 #endif
 	}
-
 }

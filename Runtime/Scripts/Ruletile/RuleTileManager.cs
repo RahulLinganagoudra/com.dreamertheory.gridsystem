@@ -20,10 +20,13 @@ namespace DT.GridSystem.Ruletile
 		[SerializeField] protected RuleTile ruleTile;
 		[SerializeField] protected List<PlacedTile> placedTileList = new();
 
+		[SerializeField] private Transform container;
+		// Runtime dictionary - rebuilt from serialized list
+		protected readonly Dictionary<Vector2Int, GameObject> placedTiles = new();
+
 #if UNITY_EDITOR
 		[Header("Editor - Selection")]
-		[SerializeField]private Transform container;
-		
+
 		[SerializeField] private Color selectedColor = new(1f, 0.6f, 0.2f, 0.4f);
 
 		protected readonly HashSet<Vector2Int> selectedCells = new();
@@ -32,18 +35,11 @@ namespace DT.GridSystem.Ruletile
 		private Vector2 boxSelectStart, boxSelectEnd;
 #endif
 
-		// Runtime dictionary - rebuilt from serialized list
-		protected readonly Dictionary<Vector2Int, GameObject> placedTiles = new();
-
-#if UNITY_EDITOR
 		public Transform Container
 		{
 			get => container == null ? transform : container;
 			set => container = value;
 		}
-#else
-        public Transform Container => transform;
-#endif
 
 		protected virtual void OnEnable()
 		{
@@ -57,13 +53,50 @@ namespace DT.GridSystem.Ruletile
 			RebuildDictionary();
 		}
 
+#if UNITY_EDITOR
 		protected virtual void OnDisable()
 		{
-#if UNITY_EDITOR
 			SceneView.duringSceneGui -= OnSceneGUI;
 			Undo.undoRedoPerformed -= OnUndoRedoPerformed;
-#endif
 		}
+#endif
+		public void RebuildDictionary()
+		{
+			placedTiles.Clear();
+			for (int i = placedTileList.Count - 1; i >= 0; i--)
+			{
+				PlacedTile pt = placedTileList[i];
+				if (pt.tile == null)
+					placedTileList.RemoveAt(i);
+				else
+					placedTiles[pt.position] = pt.tile;
+			}
+		}
+
+		public virtual void DeleteAllChildren()
+		{
+#if UNITY_EDITOR
+
+			if (!Application.isPlaying)
+			{
+				Undo.RegisterCompleteObjectUndo(this, "Delete All Tiles");
+				foreach (var go in placedTiles.Values)
+					if (go != null) Undo.DestroyObjectImmediate(go);
+				placedTileList.Clear();
+				EditorUtility.SetDirty(this);
+			}
+			else
+
+#endif
+			{
+				foreach (var go in placedTiles.Values)
+					if (go != null) DestroyImmediate(go);
+				placedTileList.Clear();
+
+			}
+			placedTiles.Clear();
+		}
+		#region EditorMethods
 
 #if UNITY_EDITOR
 		private void OnSceneGUI(SceneView sceneView)
@@ -162,7 +195,7 @@ namespace DT.GridSystem.Ruletile
 			if (!GetClickedCell(e.mousePosition, out Vector2Int cell)) return;
 
 			Undo.RegisterCompleteObjectUndo(this, "Select Tile");
-			Undo.FlushUndoRecordObjects(); 
+			Undo.FlushUndoRecordObjects();
 			if (e.control || e.command)
 			{
 				if (!selectedCells.Remove(cell)) selectedCells.Add(cell);
@@ -311,7 +344,7 @@ namespace DT.GridSystem.Ruletile
 			Undo.SetCurrentGroupName(name);
 			Undo.RegisterCompleteObjectUndo(this, name);
 			return group;
-		}	
+		}
 
 		private void EndUndoGroup(int group)
 		{
@@ -369,47 +402,35 @@ namespace DT.GridSystem.Ruletile
 			RebuildDictionary();
 			SceneView.RepaintAll();
 		}
-#endif
+
 
 		private void CreateOrUpdateTile(Vector2Int pos)
 		{
-#if UNITY_EDITOR
+
 			bool isActiveTile = selectedCells.Contains(pos);
-#else
-            const bool isActiveTile = true;
-#endif
+
 			if (!isActiveTile && !placedTiles.ContainsKey(pos)) return;
 
 			// Remove existing tile if present
 			if (placedTiles.TryGetValue(pos, out GameObject existing) && existing != null)
 			{
-#if UNITY_EDITOR
+
 				Undo.DestroyObjectImmediate(existing);
-#else
-                DestroyImmediate(existing);
-#endif
 				placedTiles.Remove(pos);
 				RemoveFromPlacedTileList(pos);
 			}
 
 			// Get new tile from rule system
 			var result = ruleTile.GetPrefabForPosition(pos.x, pos.y, placedTiles,
-#if UNITY_EDITOR
 				selectedCells
-#else
-                null
-#endif
+
 			);
 
 			if (result.prefab == null) return;
 
-			// Create new tile
-#if UNITY_EDITOR
 			GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(result.prefab, Container);
 			Undo.RegisterCreatedObjectUndo(instance, "Create Rule Tile");
-#else
-			GameObject instance = GameObject.Instantiate(result.prefab, Container);
-#endif
+
 
 			instance.transform.position = GetWorldPosition(pos.x, pos.y, true);
 			instance.transform.rotation = result.rotation;
@@ -428,40 +449,8 @@ namespace DT.GridSystem.Ruletile
 			}
 		}
 
-		public void RebuildDictionary()
-		{
-			placedTiles.Clear();
-			for (int i = placedTileList.Count - 1; i >= 0; i--)
-			{
-				PlacedTile pt = placedTileList[i];
-				if (pt.tile == null)
-					placedTileList.RemoveAt(i);
-				else
-					placedTiles[pt.position] = pt.tile;
-			}
-		}
-
-		public virtual void DeleteAllChildren()
-		{
-#if UNITY_EDITOR
-			if (!Application.isPlaying)
-			{
-				Undo.RegisterCompleteObjectUndo(this, "Delete All Tiles");
-				foreach (var go in placedTiles.Values)
-					if (go != null) Undo.DestroyObjectImmediate(go);
-				placedTileList.Clear();
-				EditorUtility.SetDirty(this);
-			}
-			else
 #endif
-			{
-				foreach (var go in placedTiles.Values)
-					if (go != null) DestroyImmediate(go);
-#if UNITY_EDITOR
-				placedTileList.Clear();
-#endif
-			}
-			placedTiles.Clear();
-		}
+#endregion
+		
 	}
 }

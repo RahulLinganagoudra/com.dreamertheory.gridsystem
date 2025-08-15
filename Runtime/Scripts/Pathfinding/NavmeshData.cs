@@ -14,21 +14,6 @@ namespace DT.GridSystem.Pathfinding
 		{
 			public NavMeshArea area;
 			public PathfindingCullingMask cullingMask;
-			public override string ToString()
-			{
-				string cullingMaskName;
-				if (cullingMask != null)
-				{
-					cullingMaskName = cullingMask.name;
-				}
-				else
-				{
-					cullingMaskName = "None";
-
-				}
-
-				return area.ToString() + " " + cullingMaskName;
-			}
 		}
 
 		[HideInInspector] public Vector2Int gridSize;
@@ -39,7 +24,7 @@ namespace DT.GridSystem.Pathfinding
 
 		public bool IsWalkable(Vector2Int position, PathfindingCullingMask cullingMask)
 		{
-			return cellData.ContainsKey(position) && (cellData[position].cullingMask == cullingMask || walkableCells[position]);
+			return cellData.ContainsKey(position) && (cellData[position].cullingMask.Contains(cullingMask) || walkableCells[position]);
 		}
 
 
@@ -57,10 +42,10 @@ namespace DT.GridSystem.Pathfinding
 					Vector2Int pos = new(x, y);
 					GameObject obj = grid.GetGridObject(x, y);
 					bool isWalkable = obj == null;
-					PathfindingCullingMask cullingMask = null;
+					PathfindingCullingMask cullingMask = PathfindingCullingMask.AllMask;
 					if (obj != null)
 					{
-						if (obj.TryGetComponent(out PathfinderAgent<GameObject> agent))
+						if (obj.TryGetComponent(out PathfinderAgent agent))
 						{
 							cullingMask = agent.CullingMask;
 						}
