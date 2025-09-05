@@ -43,7 +43,7 @@ namespace DT.GridSystem.Ruletile
 			if (GUILayout.Button("Delete Selected"))
 			{
 				var generator = (RuleTileManager)target;
-				generator.DeleteSelectedTiles();
+				generator.DeleteSelectedTilesEditor();
 			}
 			if (GUILayout.Button("Destroy All"))
 			{
@@ -67,7 +67,7 @@ namespace DT.GridSystem.Ruletile
 		{
 			if (Target == null) return;
 			var generator = Target;
-			generator.DeleteSelectedTiles();
+			generator.DeleteSelectedTilesEditor();
 		}
 
 		[MenuItem("DT/Generate ruletile &g")]

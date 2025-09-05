@@ -275,7 +275,7 @@ namespace DT.GridSystem
 		/// Converts a Vector2Int grid position to a world position.
 		/// This method must be implemented in derived classes.
 		/// </summary>
-		internal Vector3 GetWorldPosition(Vector2Int vector2Int)
+		public Vector3 GetWorldPosition(Vector2Int vector2Int)
 		{
 			return GetWorldPosition(vector2Int.x, vector2Int.y, true);
 		}
